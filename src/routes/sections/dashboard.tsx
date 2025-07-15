@@ -80,6 +80,8 @@ const PermissionDeniedPage = lazy(() => import('src/pages/dashboard/permission')
 // Blank page
 const ParamsPage = lazy(() => import('src/pages/dashboard/params'));
 const BlankPage = lazy(() => import('src/pages/dashboard/blank'));
+// Class page
+const ClassesPage = lazy(() => import('src/pages/dashboard/lop-hoc/lophoc'));
 
 // ----------------------------------------------------------------------
 
@@ -115,6 +117,7 @@ export const dashboardRoutes: RouteObject[] = [
       { path: 'banking', element: <OverviewBankingPage /> },
       { path: 'booking', element: <OverviewBookingPage /> },
       { path: 'file', element: <OverviewFilePage /> },
+      { path: 'classes', element: <ClassesPage /> },
       { path: 'course', element: <OverviewCoursePage /> },
       {
         path: 'user',

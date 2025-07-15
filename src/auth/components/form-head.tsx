@@ -14,11 +14,11 @@ type FormHeadProps = BoxProps & {
 export function FormHead({ sx, icon, title, description, ...other }: FormHeadProps) {
   return (
     <>
-      {icon && (
+      {/* {icon && (
         <Box component="span" sx={{ mb: 3, mx: 'auto', display: 'inline-flex' }}>
           {icon}
         </Box>
-      )}
+      )} */}
 
       <Box
         sx={[
@@ -34,7 +34,7 @@ export function FormHead({ sx, icon, title, description, ...other }: FormHeadPro
         ]}
         {...other}
       >
-        <Typography variant="h5">{title}</Typography>
+        <Typography variant="h5" color='primary'>{title}</Typography>
 
         {description && (
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>

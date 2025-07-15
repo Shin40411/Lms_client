@@ -28,14 +28,13 @@ import { signInWithPassword } from '../../context/jwt';
 export type SignInSchemaType = zod.infer<typeof SignInSchema>;
 
 export const SignInSchema = zod.object({
-  email: zod
+  username: zod
     .string()
-    .min(1, { message: 'Email is required!' })
-    .email({ message: 'Email must be a valid email address!' }),
+    .min(1, { message: 'Tên đăng nhập bắt buộc!' }),
   password: zod
     .string()
-    .min(1, { message: 'Password is required!' })
-    .min(6, { message: 'Password must be at least 6 characters!' }),
+    .min(1, { message: 'Mật khẩu bắt buộc!' })
+    .min(6, { message: 'Mật khẩu ít nhất 6 ký tự!' }),
 });
 
 // ----------------------------------------------------------------------
@@ -50,8 +49,8 @@ export function JwtSignInView() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const defaultValues: SignInSchemaType = {
-    email: 'demo@minimals.cc',
-    password: '@2Minimal',
+    username: 'thevinh',
+    password: 'thevinh',
   };
 
   const methods = useForm<SignInSchemaType>({
@@ -66,10 +65,10 @@ export function JwtSignInView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await signInWithPassword({ email: data.email, password: data.password });
+      await signInWithPassword({ username: data.username, password: data.password });
       await checkUserSession?.();
-
-      router.refresh();
+      console.log(data);
+      // router.refresh();
     } catch (error) {
       console.error(error);
       const feedbackMessage = getErrorMessage(error);
@@ -79,10 +78,10 @@ export function JwtSignInView() {
 
   const renderForm = () => (
     <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
-      <Field.Text name="email" label="Email address" slotProps={{ inputLabel: { shrink: true } }} />
+      <Field.Text name="username" label="Tên đăng nhập" slotProps={{ inputLabel: { shrink: true } }} />
 
       <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column' }}>
-        <Link
+        {/* <Link
           component={RouterLink}
           href="#"
           variant="body2"
@@ -90,12 +89,12 @@ export function JwtSignInView() {
           sx={{ alignSelf: 'flex-end' }}
         >
           Forgot password?
-        </Link>
+        </Link> */}
 
         <Field.Text
           name="password"
-          label="Password"
-          placeholder="6+ characters"
+          label="Mật khẩu"
+          placeholder="6+ Ký tự"
           type={showPassword.value ? 'text' : 'password'}
           slotProps={{
             inputLabel: { shrink: true },
@@ -116,14 +115,14 @@ export function JwtSignInView() {
 
       <Button
         fullWidth
-        color="inherit"
+        color="primary"
         size="large"
         type="submit"
         variant="contained"
         loading={isSubmitting}
-        loadingIndicator="Sign in..."
+        loadingIndicator="Đang xác thực..."
       >
-        Sign in
+        Đăng nhập
       </Button>
     </Box>
   );
@@ -131,23 +130,23 @@ export function JwtSignInView() {
   return (
     <>
       <FormHead
-        title="Sign in to your account"
+        title="Đăng nhập tài khoản"
         description={
           <>
-            {`Don’t have an account? `}
-            <Link component={RouterLink} href={paths.auth.jwt.signUp} variant="subtitle2">
-              Get started
+            {`Bạn cần hỗ trợ? `}
+            <Link component={RouterLink} href="https://www.iit.vn/" variant="subtitle2">
+              Liên hệ IIT
             </Link>
           </>
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />
 
-      <Alert severity="info" sx={{ mb: 3 }}>
-        Use <strong>{defaultValues.email}</strong>
+      {/* <Alert severity="info" sx={{ mb: 3 }}>
+        Use <strong>{defaultValues.username}</strong>
         {' with password '}
         <strong>{defaultValues.password}</strong>
-      </Alert>
+      </Alert> */}
 
       {!!errorMessage && (
         <Alert severity="error" sx={{ mb: 3 }}>

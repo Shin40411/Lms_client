@@ -25,6 +25,7 @@ export function AuthSplitContent({
         (theme) => ({
           display: 'flex',
           flex: '1 1 auto',
+          justifyContent: { xs: 'center', sm: 'center' },
           alignItems: 'center',
           flexDirection: 'column',
           p: theme.spacing(3, 2, 10, 2),

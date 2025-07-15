@@ -28,7 +28,10 @@ const authJwt = {
         <GuestGuard>
           <AuthSplitLayout
             slotProps={{
-              section: { title: 'Hi, Welcome back' },
+              section: {
+                title: 'Phần mềm hỗ trợ dạy và học IIT',
+                subtitle: 'Nền tảng dạy học số cho lớp học thông minh'
+              },
             }}
           >
             <Jwt.SignInPage />

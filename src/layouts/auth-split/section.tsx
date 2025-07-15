@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import { RouterLink } from 'src/routes/components';
 
 import { CONFIG } from 'src/global-config';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -33,27 +34,46 @@ export function AuthSplitSection({
   methods,
   layoutQuery = 'md',
   title = 'Manage the job',
-  imgUrl = `${CONFIG.assetsDir}/assets/illustrations/illustration-dashboard.webp`,
-  subtitle = 'More effectively with optimized workflows.',
+  imgUrl = `${CONFIG.assetsDir}/assets/illustrations/edu-tech.webp`,
+  subtitle = '',
   ...other
 }: AuthSplitSectionProps) {
+
+  const features = [
+    {
+      text: 'Quản lý lớp học dễ dàng',
+      icon: 'healthicons:i-training-class',
+    },
+    {
+      text: 'Theo dõi tiến độ học tập',
+      icon: 'solar:chart-square-outline',
+    },
+    {
+      text: 'Thi trực tuyến',
+      icon: 'solar:clipboard-text-outline',
+    },
+    {
+      text: 'Khoá học trực tuyến',
+      icon: 'solar:video-library-outline',
+    },
+    {
+      text: 'Chat trực tuyến',
+      icon: 'solar:chat-line-outline',
+    },
+  ];
+
   return (
     <Box
       sx={[
         (theme) => ({
-          ...theme.mixins.bgGradient({
-            images: [
-              `linear-gradient(0deg, ${varAlpha(theme.vars.palette.background.defaultChannel, 0.92)}, ${varAlpha(theme.vars.palette.background.defaultChannel, 0.92)})`,
-              `url(${CONFIG.assetsDir}/assets/background/background-3-blur.webp)`,
-            ],
-          }),
-          px: 3,
-          pb: 3,
+          background: 'rgb(7, 141, 238)',
+          px: { lg: 0, xl: 3 },
+          pb: { lg: 0, xl: 3 },
+          // pt: 'var(--layout-header-desktop-height)',
           width: 1,
-          maxWidth: 480,
+          maxWidth: 600,
           display: 'none',
           position: 'relative',
-          pt: 'var(--layout-header-desktop-height)',
           [theme.breakpoints.up(layoutQuery)]: {
             gap: 8,
             display: 'flex',
@@ -66,60 +86,86 @@ export function AuthSplitSection({
       ]}
       {...other}
     >
-      <div>
-        <Typography variant="h3" sx={{ textAlign: 'center' }}>
-          {title}
-        </Typography>
-
-        {subtitle && (
-          <Typography sx={{ color: 'text.secondary', textAlign: 'center', mt: 2 }}>
-            {subtitle}
-          </Typography>
-        )}
-      </div>
-
       <Box
-        component="img"
-        alt="Dashboard illustration"
-        src={imgUrl}
-        sx={{ width: 1, aspectRatio: '4/3', objectFit: 'cover' }}
-      />
+        sx={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          maxHeight: { md: 'unset', lg: 700, xl: 700 },
+          top: { md: 0, lg: '10%', xl: '10%' },
+          left: {
+            xs: 0,
+            sm: 0,
+            md: 0,
+            lg: '10%',
+            xl: '30%',
+          },
+          overflow: 'hidden',
+          borderRadius: { md: 0, lg: 2, xl: 2 },
+          boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backgroundImage: `url(${imgUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(5px)',
+            transform: 'scale(1.1)',
+            zIndex: 0,
+            borderRadius: 2
+          }}
+        />
 
-      {!!methods?.length && method && (
-        <Box component="ul" sx={{ gap: 2, display: 'flex' }}>
-          {methods.map((option) => {
-            const selected = method === option.label.toLowerCase();
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            color: 'common.white',
+            height: '100%',
+            px: 7,
+          }}
+        >
+          <Typography variant="h3" sx={{ textAlign: 'left', textTransform: 'uppercase' }}>
+            {title}
+          </Typography>
 
-            return (
+          {subtitle && (
+            <Typography sx={{ textAlign: 'left', mt: 2 }}>
+              {subtitle}
+            </Typography>
+          )}
+
+          <Box component="ul" sx={{ mt: 3 }}>
+            {features.map((feature, index) => (
               <Box
-                key={option.label}
+                key={index}
                 component="li"
                 sx={{
-                  ...(!selected && {
-                    cursor: 'not-allowed',
-                    filter: 'grayscale(1)',
-                  }),
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 1.5,
+                  listStyle: 'none',
                 }}
               >
-                <Tooltip title={option.label} placement="top">
-                  <Link
-                    component={RouterLink}
-                    href={option.path}
-                    sx={{ ...(!selected && { pointerEvents: 'none' }) }}
-                  >
-                    <Box
-                      component="img"
-                      alt={option.label}
-                      src={option.icon}
-                      sx={{ width: 32, height: 32 }}
-                    />
-                  </Link>
-                </Tooltip>
+                <Iconify
+                  icon={feature.icon as any}
+                  width={24}
+                  height={24}
+                  style={{ marginRight: 12, color: '#00e676' }}
+                />
+                <Typography variant="body1">{feature.text}</Typography>
               </Box>
-            );
-          })}
+            ))}
+          </Box>
         </Box>
-      )}
+      </Box>
     </Box>
   );
 }
