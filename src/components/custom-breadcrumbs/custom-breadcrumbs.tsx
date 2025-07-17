@@ -65,7 +65,20 @@ export function CustomBreadcrumbs({
 
   const renderLinks = () =>
     slots?.breadcrumbs ?? (
-      <Breadcrumbs separator={<BreadcrumbsSeparator />} {...slotProps?.breadcrumbs}>
+      <Breadcrumbs sx={{
+        bgcolor: 'common.white',
+        boxShadow: '0 8px 14px -2px rgba(0, 0, 0, 0.1),0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        padding: '0.75rem 1.25rem',
+        borderRadius: 35
+      }} separator={
+        <BreadcrumbsSeparator viewBox="0 0 20 20">
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+          />
+        </BreadcrumbsSeparator>
+      } {...slotProps?.breadcrumbs}>
         {links.map((link, index) => (
           <BreadcrumbsLink
             key={link.name ?? index}

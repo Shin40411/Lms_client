@@ -30,9 +30,9 @@ export const BreadcrumbsContent = styled('div')(({ theme }) => ({
   flexDirection: 'column',
 }));
 
-export const BreadcrumbsSeparator = styled('span')(({ theme }) => ({
-  width: 4,
-  height: 4,
-  borderRadius: '50%',
-  backgroundColor: theme.vars.palette.text.disabled,
+export const BreadcrumbsSeparator = styled('svg')(({ theme }) => ({
+  width: 16,
+  height: 16,
+  fill: theme.vars?.palette?.text?.disabled ?? theme.palette.text.disabled,
+  flexShrink: 0,
 }));

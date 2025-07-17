@@ -49,8 +49,8 @@ export function JwtSignInView() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const defaultValues: SignInSchemaType = {
-    username: 'thevinh',
-    password: 'thevinh',
+    username: 'tungbui1',
+    password: 'tungbui1',
   };
 
   const methods = useForm<SignInSchemaType>({
@@ -134,7 +134,7 @@ export function JwtSignInView() {
         description={
           <>
             {`Bạn cần hỗ trợ? `}
-            <Link component={RouterLink} href="https://www.iit.vn/" variant="subtitle2">
+            <Link component={RouterLink} href="https://www.iit.vn/" target='_blank' variant="subtitle2">
               Liên hệ IIT
             </Link>
           </>

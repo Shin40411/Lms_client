@@ -97,3 +97,32 @@ export type IUserAccountBillingHistory = {
   invoiceNumber: string;
   createdAt: IDateValue;
 };
+
+export interface UserResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: UserItem[];
+};
+
+export interface UserItem {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  dob: string;
+  avatar: string;
+  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  code: string;
+  email: string;
+  phone: string;
+  teacherProfile?: {
+    id: string;
+    degree: 'BACHELOR' | 'MASTER' | 'DOCTOR' | string;
+  };
+  role: {
+    id: string;
+    name: string;
+  };
+}

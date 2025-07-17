@@ -42,7 +42,8 @@ export const endpoints = {
     signUp: '/api/auth/sign-up',
   },
   classes: {
-    list: '/api/v1/classrooms'
+    list: '/api/v1/classrooms',
+    byId: (id: string) => `/api/v1/classrooms/${id}`
   },
   mail: {
     list: '/api/mail/list',
@@ -60,4 +61,7 @@ export const endpoints = {
     details: '/api/product/details',
     search: '/api/product/search',
   },
+  users: {
+    list: (params?: string) => `/api/v1/users${params}`
+  }
 };

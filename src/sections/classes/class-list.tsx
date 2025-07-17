@@ -1,17 +1,21 @@
 import { Box, Pagination } from "@mui/material";
 import { useCallback, useState } from "react";
 import { ClassCard } from "./class-card";
-import { ClassListResponse } from "src/types/classes";
+import { ClassItem, ClassListResponse } from "src/types/classes";
+import { UseBooleanReturn } from "minimal-shared/hooks";
 
 type Props = {
     classes: ClassListResponse | null;
+    onEdit: (classItem: ClassItem) => void;
+    openEdit: (event: React.MouseEvent<HTMLElement>) => void;
+    confirmDelete: UseBooleanReturn;
 };
 
-export function ClassList({ classes }: Props) {
+export function ClassList({ classes, onEdit, confirmDelete, openEdit }: Props) {
     const classItems = classes?.results ?? [];
     const [page, setPage] = useState(1);
 
-    const rowsPerPage = 12;
+    const rowsPerPage = 9;
 
     const handleChangePage = useCallback((event: React.ChangeEvent<unknown>, newPage: number) => {
         setPage(newPage);
@@ -29,7 +33,7 @@ export function ClassList({ classes }: Props) {
                 {classItems
                     .slice((page - 1) * rowsPerPage, (page - 1) * rowsPerPage + rowsPerPage)
                     .map((c) => (
-                        <ClassCard key={c.id} classgr={c} />
+                        <ClassCard key={c.id} classgr={c} onEdit={onEdit} openEdit={openEdit} confirmDelete={confirmDelete} />
                     ))}
             </Box>
 
@@ -38,7 +42,13 @@ export function ClassList({ classes }: Props) {
                 shape="circular"
                 count={Math.ceil(classItems.length / rowsPerPage)}
                 onChange={handleChangePage}
-                sx={{ mt: { xs: 5, md: 8 }, mx: 'auto' }}
+                sx={{
+                    mt: { xs: 5, md: 8 },
+                    mx: 'auto',
+                    '.MuiPagination-ul': {
+                        justifyContent: 'center',
+                    },
+                }}
             />
         </>
     );

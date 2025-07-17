@@ -15,7 +15,7 @@ import { _contacts, _notifications } from 'src/_mock';
 import { Logo } from 'src/components/logo';
 import { useSettingsContext } from 'src/components/settings';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useAuthContext, useMockedUser } from 'src/auth/hooks';
 
 import { NavMobile } from './nav-mobile';
 import { VerticalDivider } from './content';
@@ -69,6 +69,8 @@ export function DashboardLayout({
   const { user } = useMockedUser();
 
   const settings = useSettingsContext();
+
+  const { user: userAuth } = useAuthContext();
 
   const navVars = dashboardNavColorVars(theme, settings.state.navColor, settings.state.navLayout);
 
@@ -143,10 +145,11 @@ export function DashboardLayout({
           )}
 
           {/** @slot Workspace popover */}
-          <WorkspacesPopover
+          {/* <WorkspacesPopover
             data={_workspaces}
             sx={{ ...(isNavHorizontal && { color: 'var(--layout-nav-text-primary-color)' }) }}
-          />
+          /> */}
+          👋 xin chào {userAuth?.lastName} {userAuth?.firstName} 
         </>
       ),
       rightArea: (
