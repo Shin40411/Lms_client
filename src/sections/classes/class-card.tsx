@@ -15,9 +15,10 @@ type Props = CardProps & {
     onEdit: (classItem: ClassItem) => void;
     openEdit: (event: React.MouseEvent<HTMLElement>) => void;
     confirmDelete: UseBooleanReturn;
+    onDelete: (id: string) => void;
 };
 
-export function ClassCard({ classgr, onEdit, openEdit, confirmDelete, sx, ...other }: Props) {
+export function ClassCard({ classgr, onEdit, openEdit, confirmDelete, onDelete, sx, ...other }: Props) {
     const menuActions = usePopover();
 
     const renderMenuActions = () => (
@@ -29,11 +30,18 @@ export function ClassCard({ classgr, onEdit, openEdit, confirmDelete, sx, ...oth
         >
             <MenuList>
                 <MenuItem onClick={(e) => { openEdit(e), onEdit(classgr), menuActions.onClose() }}>
-                    <Iconify icon="solar:pen-bold" />
+                    <Iconify icon="fluent-color:document-edit-16" />
                     Chỉnh sửa
                 </MenuItem>
-                <MenuItem onClick={() => { confirmDelete.onTrue(), menuActions.onClose() }} sx={{ color: 'error.main' }}>
-                    <Iconify icon="solar:trash-bin-trash-bold" />
+                <MenuItem
+                    onClick={() => {
+                        confirmDelete.onTrue(),
+                        menuActions.onClose(),
+                        onDelete(classgr.id)
+                    }}
+                    sx={{ color: 'error.main' }}
+                >
+                    <Iconify icon="fluent-color:dismiss-circle-32" />
                     Xóa
                 </MenuItem>
             </MenuList>
@@ -119,7 +127,7 @@ export function ClassCard({ classgr, onEdit, openEdit, confirmDelete, sx, ...oth
                         <ListItemText
                             sx={{ mt: 5, mb: 1 }}
                             primary="Chủ nhiệm"
-                            secondary={classgr.homeroomTeacher.firstName}
+                            secondary={`${classgr.homeroomTeacher.lastName} ${classgr.homeroomTeacher.firstName}`}
                             slotProps={{
                                 primary: { sx: { typography: 'caption' } },
                                 secondary: { sx: { typography: 'subtitle2', mt: 0.5 } },

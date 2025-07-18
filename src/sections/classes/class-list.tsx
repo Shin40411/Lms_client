@@ -9,9 +9,10 @@ type Props = {
     onEdit: (classItem: ClassItem) => void;
     openEdit: (event: React.MouseEvent<HTMLElement>) => void;
     confirmDelete: UseBooleanReturn;
+    onDelete: (id: string) => void;
 };
 
-export function ClassList({ classes, onEdit, confirmDelete, openEdit }: Props) {
+export function ClassList({ classes, onEdit, confirmDelete, onDelete, openEdit }: Props) {
     const classItems = classes?.results ?? [];
     const [page, setPage] = useState(1);
 
@@ -33,7 +34,14 @@ export function ClassList({ classes, onEdit, confirmDelete, openEdit }: Props) {
                 {classItems
                     .slice((page - 1) * rowsPerPage, (page - 1) * rowsPerPage + rowsPerPage)
                     .map((c) => (
-                        <ClassCard key={c.id} classgr={c} onEdit={onEdit} openEdit={openEdit} confirmDelete={confirmDelete} />
+                        <ClassCard
+                            key={c.id}
+                            classgr={c}
+                            onEdit={onEdit}
+                            openEdit={openEdit}
+                            confirmDelete={confirmDelete}
+                            onDelete={onDelete}
+                        />
                     ))}
             </Box>
 

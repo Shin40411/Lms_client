@@ -28,11 +28,15 @@ export function TablePaginationCustom({
         component="div"
         {...other}
         sx={{ borderTopColor: 'transparent' }}
+        labelRowsPerPage="Số hàng mỗi trang"
+        labelDisplayedRows={({ from, to, count }) =>
+          `${from}–${to} trong tổng ${count !== -1 ? count : `hơn ${to}`}`
+        }
       />
 
       {onChangeDense && (
         <FormControlLabel
-          label="Dense"
+          label="Thu nhỏ"
           control={
             <Switch
               checked={dense}

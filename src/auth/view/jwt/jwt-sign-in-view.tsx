@@ -70,9 +70,9 @@ export function JwtSignInView() {
       console.log(data);
       // router.refresh();
     } catch (error) {
-      console.error(error);
       const feedbackMessage = getErrorMessage(error);
-      setErrorMessage(feedbackMessage);
+      console.error(error, feedbackMessage);
+      setErrorMessage('Server chưa được kết nối!');
     }
   });
 

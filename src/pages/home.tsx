@@ -3,9 +3,9 @@ import { HomeView } from 'src/sections/home/view';
 // ----------------------------------------------------------------------
 
 const metadata = {
-  title: 'Minimals UI: The starting point for your next project',
+  title: 'IIT: Phần mềm hỗ trợ dạy học',
   description:
-    'The starting point for your next project with Minimal UI Kit, built on the newest version of Material-UI ©, ready to be customized to your style',
+    'Phát triển tri thức - Hiệu quả tuyệt đối',
 };
 
 export default function Page() {

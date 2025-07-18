@@ -1,4 +1,4 @@
-import type { IUserItem } from 'src/types/user';
+import type { IUserItem, UserItem } from 'src/types/user';
 
 import { useBoolean, usePopover } from 'minimal-shared/hooks';
 
@@ -27,7 +27,7 @@ import { UserQuickEditForm } from './user-quick-edit-form';
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: IUserItem;
+  row: UserItem;
   selected: boolean;
   editHref: string;
   onSelectRow: () => void;
@@ -58,7 +58,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
         <li>
           <MenuItem component={RouterLink} href={editHref} onClick={() => menuActions.onClose()}>
             <Iconify icon="solar:pen-bold" />
-            Edit
+            Chỉnh sửa
           </MenuItem>
         </li>
 
@@ -70,7 +70,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
           sx={{ color: 'error.main' }}
         >
           <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
+          Xóa
         </MenuItem>
       </MenuList>
     </CustomPopover>
@@ -84,7 +84,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
       content="Are you sure want to delete?"
       action={
         <Button variant="contained" color="error" onClick={onDeleteRow}>
-          Delete
+          Xóa
         </Button>
       }
     />
@@ -93,7 +93,11 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
   return (
     <>
       <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
-        <TableCell padding="checkbox">
+        <TableCell padding="checkbox"
+          sx={{
+            border: 'none',
+          }}
+        >
           <Checkbox
             checked={selected}
             onClick={onSelectRow}
@@ -106,9 +110,11 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
           />
         </TableCell>
 
-        <TableCell>
+        <TableCell sx={{
+          border: 'none',
+        }}>
           <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
-            <Avatar alt={row.name} src={row.avatarUrl} />
+            <Avatar alt={row.username} src={row.avatar} />
 
             <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
               <Link
@@ -117,43 +123,51 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
                 color="inherit"
                 sx={{ cursor: 'pointer' }}
               >
-                {row.name}
+                {row.lastName} {row.firstName}
               </Link>
               <Box component="span" sx={{ color: 'text.disabled' }}>
-                {row.email}
+                {row.username}
               </Box>
             </Stack>
           </Box>
         </TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.phoneNumber}</TableCell>
+        <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>
+          {row.gender === 'MALE' ? 'Nam' : row.gender === 'FEMALE' ? 'Nữ' : 'Khác'}
+        </TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.company}</TableCell>
+        <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>{row.phone}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.role}</TableCell>
+        <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>{row.email}</TableCell>
 
-        <TableCell>
+        <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>{row.role.name}</TableCell>
+
+        <TableCell sx={{
+          border: 'none',
+        }}>
           <Label
             variant="soft"
             color={
-              (row.status === 'active' && 'success') ||
-              (row.status === 'pending' && 'warning') ||
-              (row.status === 'banned' && 'error') ||
+              (row.status === 'ACTIVE' && 'success') ||
+              (row.status === 'INACTIVE' && 'warning') ||
               'default'
             }
           >
-            {row.status}
+            {row.status === 'ACTIVE' ? 'Đang hoạt động' : 'Không hoạt động'}
           </Label>
         </TableCell>
 
-        <TableCell>
+        <TableCell
+          sx={{
+            border: 'none',
+          }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Tooltip title="Quick Edit" placement="top" arrow>
+            <Tooltip title="Chỉnh sửa" placement="top" arrow>
               <IconButton
                 color={quickEditForm.value ? 'inherit' : 'default'}
                 onClick={quickEditForm.onTrue}
               >
-                <Iconify icon="solar:pen-bold" />
+                <Iconify icon="fluent-color:edit-24" />
               </IconButton>
             </Tooltip>
 
@@ -165,7 +179,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
             </IconButton>
           </Box>
         </TableCell>
-      </TableRow>
+      </TableRow >
 
       {renderQuickEditForm()}
       {renderMenuActions()}

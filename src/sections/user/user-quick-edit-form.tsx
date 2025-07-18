@@ -1,4 +1,4 @@
-import type { IUserItem } from 'src/types/user';
+import type { IUserItem, UserItem } from 'src/types/user';
 
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -49,7 +49,7 @@ export const UserQuickEditSchema = zod.object({
 type Props = {
   open: boolean;
   onClose: () => void;
-  currentUser?: IUserItem;
+  currentUser?: UserItem;
 };
 
 export function UserQuickEditForm({ currentUser, open, onClose }: Props) {
@@ -71,7 +71,7 @@ export function UserQuickEditForm({ currentUser, open, onClose }: Props) {
     mode: 'all',
     resolver: zodResolver(UserQuickEditSchema),
     defaultValues,
-    values: currentUser,
+    // values: currentUser,
   });
 
   const {
@@ -113,14 +113,10 @@ export function UserQuickEditForm({ currentUser, open, onClose }: Props) {
         },
       }}
     >
-      <DialogTitle>Quick update</DialogTitle>
+      <DialogTitle>Chỉnh sửa thông tin người dùng</DialogTitle>
 
       <Form methods={methods} onSubmit={onSubmit}>
         <DialogContent>
-          <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>
-            Account is waiting for confirmation
-          </Alert>
-
           <Box
             sx={{
               rowGap: 3,
@@ -129,7 +125,9 @@ export function UserQuickEditForm({ currentUser, open, onClose }: Props) {
               gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' },
             }}
           >
-            <Field.Select name="status" label="Status">
+            <Field.Text name="lastName" label="Họ" />
+            <Field.Text name="firstName" label="Tên" />
+            <Field.Select name="status" label="Trạng thái">
               {USER_STATUS_OPTIONS.map((status) => (
                 <MenuItem key={status.value} value={status.value}>
                   {status.label}
@@ -137,35 +135,19 @@ export function UserQuickEditForm({ currentUser, open, onClose }: Props) {
               ))}
             </Field.Select>
 
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }} />
-
-            <Field.Text name="name" label="Full name" />
-            <Field.Text name="email" label="Email address" />
-            <Field.Phone name="phoneNumber" label="Phone number" />
-
-            <Field.CountrySelect
-              fullWidth
-              name="country"
-              label="Country"
-              placeholder="Choose a country"
-            />
-
-            <Field.Text name="state" label="State/region" />
-            <Field.Text name="city" label="City" />
-            <Field.Text name="address" label="Address" />
-            <Field.Text name="zipCode" label="Zip/code" />
-            <Field.Text name="company" label="Company" />
-            <Field.Text name="role" label="Role" />
+            <Field.Text name="email" label="Địa chỉ Email" />
+            <Field.Phone name="phoneNumber" label="Số điện thoại" />
+            <Field.Text name="role" label="Vai trò" />
           </Box>
         </DialogContent>
 
         <DialogActions>
           <Button variant="outlined" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
 
           <Button type="submit" variant="contained" loading={isSubmitting}>
-            Update
+            Lưu thay đổi
           </Button>
         </DialogActions>
       </Form>

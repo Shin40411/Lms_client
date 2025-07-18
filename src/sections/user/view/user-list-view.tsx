@@ -1,7 +1,7 @@
 import type { TableHeadCellProps } from 'src/components/table';
-import type { IUserItem, IUserTableFilters } from 'src/types/user';
+import type { IUserItem, IUserTableFilters, UserItem, UserResponse } from 'src/types/user';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { varAlpha } from 'minimal-shared/utils';
 import { useBoolean, useSetState } from 'minimal-shared/hooks';
 
@@ -42,18 +42,24 @@ import {
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserTableFiltersResult } from '../user-table-filters-result';
+import { Stack } from '@mui/material';
+import { CONFIG } from 'src/global-config';
+import { getUsers } from 'src/api/users';
+import { RoleItem } from 'src/types/role';
+import { getRoles } from 'src/api/roles';
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...USER_STATUS_OPTIONS];
+const STATUS_OPTIONS = [{ value: 'all', label: 'Tất cả' }, ...USER_STATUS_OPTIONS];
 
 const TABLE_HEAD: TableHeadCellProps[] = [
-  { id: 'name', label: 'Name' },
-  { id: 'phoneNumber', label: 'Phone number', width: 180 },
-  { id: 'company', label: 'Company', width: 220 },
-  { id: 'role', label: 'Role', width: 180 },
-  { id: 'status', label: 'Status', width: 100 },
-  { id: '', width: 88 },
+  { id: 'username', label: 'Họ và tên', width: 200 },
+  { id: 'gender', label: 'Giới tính', width: 180 },
+  { id: 'phone', label: 'Số điện thoại', width: 180 },
+  { id: 'email', label: 'Email', width: 180 },
+  { id: 'role', label: 'Vai trò', width: 180 },
+  { id: 'status', label: 'Trạng thái', width: 100 },
+  { id: '', width: 50 },
 ];
 
 // ----------------------------------------------------------------------
@@ -63,10 +69,34 @@ export function UserListView() {
 
   const confirmDialog = useBoolean();
 
-  const [tableData, setTableData] = useState<IUserItem[]>(_userList);
+  const [tableData, setTableData] = useState<UserItem[]>([]);
+  const [rolesData, setRolesData] = useState<RoleItem[]>([]);
 
   const filters = useSetState<IUserTableFilters>({ name: '', role: [], status: 'all' });
   const { state: currentFilters, setState: updateFilters } = filters;
+
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers('');
+      setTableData(data.results || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const data = await getRoles();
+      setRolesData(data.results || []);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers();
+    fetchRoles();
+  }, []);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -140,27 +170,52 @@ export function UserListView() {
   return (
     <>
       <DashboardContent>
-        <CustomBreadcrumbs
-          heading="List"
-          links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'User', href: paths.dashboard.user.root },
-            { name: 'List' },
-          ]}
-          action={
+        <Box
+          sx={{
+            position: 'relative',
+            my: { xs: 2, md: 3 },
+            px: 4,
+            py: 2,
+            borderRadius: 2,
+            overflow: 'hidden',
+            bgcolor: (theme) =>
+              theme.palette.mode === 'light'
+                ? '#E3F2FD'
+                : theme.palette.background.paper,
+            backgroundImage: `url("${CONFIG.assetsDir}/assets/background/shape-square.svg")`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right',
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            spacing={2}
+            flexWrap="wrap"
+          >
+            <CustomBreadcrumbs
+              heading="Người dùng"
+              links={[
+                { name: 'Tổng quan', href: paths.dashboard.root },
+                { name: 'Người dùng' },
+              ]}
+            />
+
             <Button
               component={RouterLink}
               href={paths.dashboard.user.new}
               variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
+              startIcon={<Iconify icon="fluent-color:document-add-16" />}
             >
-              New user
+              Thêm mới
             </Button>
-          }
-          sx={{ mb: { xs: 3, md: 5 } }}
-        />
+          </Stack>
+        </Box>
 
         <Card>
+          {/* bộ lọc */}
           <Tabs
             value={currentFilters.status}
             onChange={handleFilterStatus}
@@ -184,13 +239,12 @@ export function UserListView() {
                       'soft'
                     }
                     color={
-                      (tab.value === 'active' && 'success') ||
-                      (tab.value === 'pending' && 'warning') ||
-                      (tab.value === 'banned' && 'error') ||
+                      (tab.value === 'ACTIVE' && 'success') ||
+                      (tab.value === 'INACTIVE' && 'warning') ||
                       'default'
                     }
                   >
-                    {['active', 'pending', 'banned', 'rejected'].includes(tab.value)
+                    {['ACTIVE', 'INACTIVE'].includes(tab.value)
                       ? tableData.filter((user) => user.status === tab.value).length
                       : tableData.length}
                   </Label>
@@ -198,13 +252,13 @@ export function UserListView() {
               />
             ))}
           </Tabs>
-
+          {/* thanh công cụ */}
           <UserTableToolbar
             filters={filters}
             onResetPage={table.onResetPage}
-            options={{ roles: _roles }}
+            options={{ roles: rolesData.map(r => r.name) }}
           />
-
+          {/* kết quả tìm kiếm */}
           {canReset && (
             <UserTableFiltersResult
               filters={filters}
@@ -213,7 +267,7 @@ export function UserListView() {
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
-
+          {/* bảng */}
           <Box sx={{ position: 'relative' }}>
             <TableSelectedAction
               dense={table.dense}
@@ -233,7 +287,15 @@ export function UserListView() {
                 </Tooltip>
               }
             />
-
+            <TablePaginationCustom
+              page={table.page}
+              dense={table.dense}
+              count={dataFiltered.length}
+              rowsPerPage={table.rowsPerPage}
+              onPageChange={table.onChangePage}
+              onChangeDense={table.onChangeDense}
+              onRowsPerPageChange={table.onChangeRowsPerPage}
+            />
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                 <TableHeadCustom
@@ -278,16 +340,6 @@ export function UserListView() {
               </Table>
             </Scrollbar>
           </Box>
-
-          <TablePaginationCustom
-            page={table.page}
-            dense={table.dense}
-            count={dataFiltered.length}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onChangeDense={table.onChangeDense}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-          />
         </Card>
       </DashboardContent>
 
@@ -299,7 +351,7 @@ export function UserListView() {
 // ----------------------------------------------------------------------
 
 type ApplyFilterProps = {
-  inputData: IUserItem[];
+  inputData: UserItem[];
   filters: IUserTableFilters;
   comparator: (a: any, b: any) => number;
 };
@@ -318,15 +370,15 @@ function applyFilter({ inputData, comparator, filters }: ApplyFilterProps) {
   inputData = stabilizedThis.map((el) => el[0]);
 
   if (name) {
-    inputData = inputData.filter((user) => user.name.toLowerCase().includes(name.toLowerCase()));
+    inputData = inputData.filter((user) => user.lastName.toLowerCase().includes(name.toLowerCase()));
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((user) => user.status === status);
+    inputData = inputData.filter((user) => user.gender === status);
   }
 
   if (role.length) {
-    inputData = inputData.filter((user) => role.includes(user.role));
+    inputData = inputData.filter((user) => role.includes(user.role.name));
   }
 
   return inputData;

@@ -43,7 +43,8 @@ export const endpoints = {
   },
   classes: {
     list: '/api/v1/classrooms',
-    byId: (id: string) => `/api/v1/classrooms/${id}`
+    byId: (id: string) => `/api/v1/classrooms/${id}`,
+    byKey: (key: string) => `/api/v1/classrooms/?search=${key}`
   },
   mail: {
     list: '/api/mail/list',
@@ -63,5 +64,8 @@ export const endpoints = {
   },
   users: {
     list: (params?: string) => `/api/v1/users${params}`
+  },
+  roles: {
+    list: '/api/v1/roles'
   }
 };

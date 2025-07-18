@@ -7,6 +7,12 @@ export async function getClasses(): Promise<ClassListResponse> {
     return data;
 }
 
+export async function searchClasses(key: string): Promise<ClassListResponse> {
+    const URL = endpoints.classes.byKey(key);
+    const { data } = await axiosInstance.get<ClassListResponse>(URL);
+    return data;
+}
+
 export async function createClass(bodyPayload: CreateOrUpdateClassDto) {
     const URL = endpoints.classes.list;
     const { data } = await axiosInstance.post(URL, bodyPayload);
@@ -22,5 +28,11 @@ export async function updateClass(id: string, bodyPayload: CreateOrUpdateClassDt
 export async function getDetails(id: string): Promise<ClassResponse> {
     const URL = endpoints.classes.byId(id);
     const { data } = await axiosInstance.get<ClassResponse>(URL);
+    return data;
+}
+
+export async function deleteClass(id: string) {
+    const URL = endpoints.classes.byId(id);
+    const { data } = await axiosInstance.delete(URL);
     return data;
 }

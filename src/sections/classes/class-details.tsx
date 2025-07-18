@@ -1,6 +1,7 @@
 import { Box, Divider, Drawer, DrawerProps, Stack, Typography } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import { ClassItem } from "src/types/classes";
+import getDegreeLabel from "src/utils/format-degree";
 
 type Props = DrawerProps & {
     classItem: ClassItem;
@@ -71,7 +72,7 @@ export function ClassDetails({ classItem, open, onClose, ...other }: Props) {
                             Bằng cấp
                         </Box>
 
-                        {classItem?.homeroomTeacher.teacherProfile.degree}
+                        {getDegreeLabel(classItem?.homeroomTeacher.teacherProfile.degree)}
                     </Box>
                     <Box sx={{ display: 'flex', typography: 'caption', textTransform: 'capitalize' }}>
                         <Box component="span" sx={{ width: 80, color: 'text.secondary', mr: 2 }}>
@@ -106,7 +107,7 @@ export function ClassDetails({ classItem, open, onClose, ...other }: Props) {
                 anchor="right"
                 slotProps={{
                     backdrop: { invisible: true },
-                    paper: { sx: { width: 320 } },
+                    paper: { sx: { width: 520 } },
                 }}
                 {...other}
             >

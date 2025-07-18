@@ -102,35 +102,35 @@ export const navData: NavSectionProps['data'] = [
       //   caption: 'Only admin can see this item.',
       // },
       { title: 'Chat', path: paths.dashboard.chat, icon: ICONS.chat },
-      {
-        title: 'Level',
-        path: '#/dashboard/menu_level',
-        icon: ICONS.menuItem,
-        children: [
-          {
-            title: 'Level 1a',
-            path: '#/dashboard/menu_level/menu_level_1a',
-            children: [
-              { title: 'Level 2a', path: '#/dashboard/menu_level/menu_level_1a/menu_level_2a' },
-              {
-                title: 'Level 2b',
-                path: '#/dashboard/menu_level/menu_level_1a/menu_level_2b',
-                children: [
-                  {
-                    title: 'Level 3a',
-                    path: '#/dashboard/menu_level/menu_level_1a/menu_level_2b/menu_level_3a',
-                  },
-                  {
-                    title: 'Level 3b',
-                    path: '#/dashboard/menu_level/menu_level_1a/menu_level_2b/menu_level_3b',
-                  },
-                ],
-              },
-            ],
-          },
-          { title: 'Level 1b', path: '#/dashboard/menu_level/menu_level_1b' },
-        ],
-      },
+      // {
+      //   title: 'Level',
+      //   path: '#/dashboard/menu_level',
+      //   icon: ICONS.menuItem,
+      //   children: [
+      //     {
+      //       title: 'Level 1a',
+      //       path: '#/dashboard/menu_level/menu_level_1a',
+      //       children: [
+      //         { title: 'Level 2a', path: '#/dashboard/menu_level/menu_level_1a/menu_level_2a' },
+      //         {
+      //           title: 'Level 2b',
+      //           path: '#/dashboard/menu_level/menu_level_1a/menu_level_2b',
+      //           children: [
+      //             {
+      //               title: 'Level 3a',
+      //               path: '#/dashboard/menu_level/menu_level_1a/menu_level_2b/menu_level_3a',
+      //             },
+      //             {
+      //               title: 'Level 3b',
+      //               path: '#/dashboard/menu_level/menu_level_1a/menu_level_2b/menu_level_3b',
+      //             },
+      //           ],
+      //         },
+      //       ],
+      //     },
+      //     { title: 'Level 1b', path: '#/dashboard/menu_level/menu_level_1b' },
+      //   ],
+      // },
     ],
   },
   {
@@ -140,14 +140,14 @@ export const navData: NavSectionProps['data'] = [
         title: 'Người dùng',
         path: paths.dashboard.user.root,
         icon: ICONS.user,
-        children: [
-          { title: 'Profile', path: paths.dashboard.user.root },
-          { title: 'Cards', path: paths.dashboard.user.cards },
-          { title: 'List', path: paths.dashboard.user.list },
-          { title: 'Create', path: paths.dashboard.user.new },
-          { title: 'Edit', path: paths.dashboard.user.demo.edit },
-          { title: 'Account', path: paths.dashboard.user.account },
-        ],
+        // children: [
+        //   { title: 'Profile', path: paths.dashboard.user.root },
+        //   { title: 'Cards', path: paths.dashboard.user.cards },
+        //   { title: 'List', path: paths.dashboard.user.list },
+        //   { title: 'Create', path: paths.dashboard.user.new },
+        //   { title: 'Edit', path: paths.dashboard.user.demo.edit },
+        //   { title: 'Account', path: paths.dashboard.user.account },
+        // ],
       },
     ]
   }

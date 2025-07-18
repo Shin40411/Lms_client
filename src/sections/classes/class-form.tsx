@@ -6,8 +6,6 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 
-
-
 import { toast } from 'src/components/snackbar';
 import { Field } from 'src/components/hook-form';
 import { ClassItem, ClassListResponse, ClassResponse, Grade } from 'src/types/classes';
@@ -15,6 +13,9 @@ import { z } from 'zod';
 import { Autocomplete, CardHeader, Chip, MenuItem, Step, StepLabel, Stepper, TextField } from '@mui/material';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { createClass, getClasses, getDetails, updateClass } from 'src/api/classes';
+import { _mockGrade } from 'src/_mock/_mockGrade';
+import { _mockYear } from 'src/_mock/_mockYear';
+import { getUsers } from 'src/api/users';
 // ----------------------------------------------------------------------
 
 // ------------------- SCHEMA ---------------------
@@ -39,39 +40,33 @@ type Props = {
     students: Student[];
     handleClose: () => void;
     resetResponse: Dispatch<SetStateAction<ClassListResponse | null>>;
+    resetTeachers: Dispatch<SetStateAction<{
+        id: string;
+        name: string;
+    }[]>>;
+    resetStudents: Dispatch<SetStateAction<{
+        id: string;
+        name: string;
+    }[]>>;
 };
 
-export function ClassForm({ currentClass, teachers, students, handleClose, resetResponse }: Props) {
-    const _mockGrade = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'Sau đại học'];
-    const _mockYear = ['2020-2021', '2021-2022', '2022-2023', '2023-2024', '2024-2025', '2025-2026'];
+export function ClassForm({ currentClass, teachers, students, handleClose, resetResponse, resetTeachers, resetStudents }: Props) {
     const [activeStep, setActiveStep] = useState(0);
     const steps = ['Thông tin lớp học', 'Phân bổ giáo viên & học sinh'];
     const [members, setMembers] = useState<ClassResponse | null>(null);
-
-    const fetchMembersInClass = async () => {
-        if (currentClass) {
-            const res = await getDetails(currentClass?.id || '');
-            setMembers(res);
-        }
-    }
-
-    useEffect(() => {
-        fetchMembersInClass();
-    }, [currentClass]);
-
-    const defaultValues: ClassSchemaType = {
-        name: currentClass?.name || '',
-        description: currentClass?.description || '',
-        grade: currentClass?.grade || '',
-        academicYear: currentClass?.academicYear || '',
-        homeroomTeacherId: currentClass?.homeroomTeacher?.id || '',
-        teacherIds: members?.teachers.map(t => t.user.id) || [],
-        studentIds: members?.students.map(s => s.id) || [],
-    };
+    const [mergedStudents, setMergedStudents] = useState<Student[]>(students);
 
     const methods = useForm<ClassSchemaType>({
         resolver: zodResolver(ClassSchema),
-        defaultValues,
+        defaultValues: {
+            name: '',
+            description: '',
+            grade: '',
+            academicYear: '',
+            homeroomTeacherId: '',
+            teacherIds: [],
+            studentIds: [],
+        },
     });
 
     const {
@@ -81,6 +76,35 @@ export function ClassForm({ currentClass, teachers, students, handleClose, reset
         trigger,
         formState: { isSubmitting },
     } = methods;
+
+    useEffect(() => {
+        const fetchMembersInClass = async () => {
+            if (currentClass) {
+                const res = await getDetails(currentClass?.id || '');
+                setMembers(res);
+                const newStudents = res.students.map((s) => ({
+                    id: s.id,
+                    name: `${s.lastName} ${s.firstName}`,
+                }));
+                setMergedStudents((prev) => {
+                    const existingIds = new Set(prev.map((s) => s.id));
+                    const uniqueNew = newStudents.filter((s) => !existingIds.has(s.id));
+                    return [...prev, ...uniqueNew];
+                });
+                reset({
+                    name: currentClass?.name || '',
+                    description: currentClass?.description || '',
+                    grade: currentClass?.grade || '',
+                    academicYear: currentClass?.academicYear || '',
+                    homeroomTeacherId: currentClass?.homeroomTeacher?.id || '',
+                    teacherIds: res?.teachers.map((t) => t.user.id) || [],
+                    studentIds: res?.students.map((s) => s.id) || [],
+                });
+            }
+        };
+
+        fetchMembersInClass();
+    }, [currentClass, reset]);
 
     const onSubmit = handleSubmit(async (data) => {
         try {
@@ -104,6 +128,18 @@ export function ClassForm({ currentClass, teachers, students, handleClose, reset
 
             const dataReset = await getClasses();
             resetResponse(dataReset);
+
+            const teacherReset = await getUsers('?isTeacher=true');
+            resetTeachers(teacherReset.results.map((item) => ({
+                id: item.id,
+                name: item.lastName + ' ' + item.firstName,
+            })));
+
+            const studentReset = await getUsers('?isStudent=true&hasClassroom=false');
+            resetStudents(studentReset.results.map((item) => ({
+                id: item.id,
+                name: item.lastName + ' ' + item.firstName,
+            })));
 
             reset();
             handleClose?.();
@@ -188,8 +224,15 @@ export function ClassForm({ currentClass, teachers, students, handleClose, reset
                                         <Autocomplete
                                             multiple
                                             options={teachers}
-                                            getOptionLabel={(option) => option.name}
-                                            value={teachers.filter((t) => field.value?.includes(t.id))}
+                                            getOptionLabel={(option) => option?.name ?? ''}
+                                            value={
+                                                field.value
+                                                    ?.map((id) =>
+                                                        teachers.find((t) => t.id === id) ||
+                                                        members?.teachers.find((m) => m.user.id === id)?.user
+                                                    )
+                                                    .filter((t): t is { id: string; name: string } => !!t) || []
+                                            }
                                             onChange={(_, newValue) => {
                                                 field.onChange(newValue.map((v) => v.id));
                                             }}
@@ -221,9 +264,16 @@ export function ClassForm({ currentClass, teachers, students, handleClose, reset
                                     render={({ field }) => (
                                         <Autocomplete
                                             multiple
-                                            options={students}
-                                            getOptionLabel={(option) => option.name}
-                                            value={students.filter((s) => field.value?.includes(s.id))}
+                                            options={mergedStudents}
+                                            getOptionLabel={(option) => option?.name ?? ''}
+                                            value={
+                                                field.value
+                                                    ?.map((id) =>
+                                                        mergedStudents.find((s) => s.id === id) ||
+                                                        members?.students.find((s) => s.id === id)
+                                                    )
+                                                    .filter((s): s is { id: string; name: string } => !!s) || []
+                                            }
                                             onChange={(_, newValue) => {
                                                 field.onChange(newValue.map((v) => v.id));
                                             }}

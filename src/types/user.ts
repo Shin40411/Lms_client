@@ -117,6 +117,7 @@ export interface UserItem {
   code: string;
   email: string;
   phone: string;
+  status: 'ACTIVE' | 'INACTIVE';
   teacherProfile?: {
     id: string;
     degree: 'BACHELOR' | 'MASTER' | 'DOCTOR' | string;
