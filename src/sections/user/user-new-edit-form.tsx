@@ -1,4 +1,4 @@
-import type { IUserItem } from 'src/types/user';
+import type { UserItem } from 'src/types/user';
 
 import { z as zod } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,64 +22,73 @@ import { fData } from 'src/utils/format-number';
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
+import { Dialog, DialogTitle } from '@mui/material';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
 export type NewUserSchemaType = zod.infer<typeof NewUserSchema>;
 
 export const NewUserSchema = zod.object({
-  avatarUrl: schemaHelper.file({ message: 'Avatar is required!' }),
-  name: zod.string().min(1, { message: 'Name is required!' }),
+  avatarUrl: schemaHelper.file({ message: 'Ảnh đại diện là bắt buộc!' }),
+
+  firstName: zod.string().min(1, { message: 'Họ và tên là bắt buộc!' }),
+
   email: zod
     .string()
-    .min(1, { message: 'Email is required!' })
-    .email({ message: 'Email must be a valid email address!' }),
-  phoneNumber: schemaHelper.phoneNumber({ isValid: isValidPhoneNumber }),
-  country: schemaHelper.nullableInput(zod.string().min(1, { message: 'Country is required!' }), {
-    // message for null value
-    message: 'Country is required!',
+    .min(1, { message: 'Email là bắt buộc!' })
+    .email({ message: 'Email không hợp lệ!' }),
+
+  phone: zod.string().min(1, { message: 'Số điện thoại là bắt buộc!' }),
+
+  dob: zod.union([zod.date(), zod.null()]).optional(),
+
+  gender: zod.enum(['MALE', 'FEMALE', 'OTHER'], {
+    errorMap: () => ({ message: 'Giới tính là bắt buộc!' }),
   }),
-  address: zod.string().min(1, { message: 'Address is required!' }),
-  company: zod.string().min(1, { message: 'Company is required!' }),
-  state: zod.string().min(1, { message: 'State is required!' }),
-  city: zod.string().min(1, { message: 'City is required!' }),
-  role: zod.string().min(1, { message: 'Role is required!' }),
-  zipCode: zod.string().min(1, { message: 'Zip code is required!' }),
-  // Not required
-  status: zod.string(),
-  isVerified: zod.boolean(),
+
+  status: zod.enum(['ACTIVE', 'INACTIVE']),
 });
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentUser?: IUserItem;
+  currentUser: UserItem | null;
+  open: boolean;
+  onClose: () => void;
 };
 
-export function UserNewEditForm({ currentUser }: Props) {
+export function UserNewEditForm({ currentUser, open, onClose }: Props) {
   const router = useRouter();
 
   const defaultValues: NewUserSchemaType = {
-    status: '',
     avatarUrl: null,
-    isVerified: true,
-    name: '',
+    firstName: '',
     email: '',
-    phoneNumber: '',
-    country: '',
-    state: '',
-    city: '',
-    address: '',
-    zipCode: '',
-    company: '',
-    role: '',
+    phone: '',
+    dob: null,
+    gender: 'OTHER',
+    status: 'ACTIVE',
   };
 
   const methods = useForm<NewUserSchemaType>({
     mode: 'onSubmit',
     resolver: zodResolver(NewUserSchema),
-    defaultValues,
-    values: currentUser,
+    defaultValues: currentUser
+      ? {
+        ...defaultValues,
+        ...{
+          avatarUrl: currentUser.avatar,
+          firstName: currentUser.firstName,
+          email: currentUser.email,
+          phone: currentUser.phone,
+          dob: currentUser.dob ? new Date(currentUser.dob) : null,
+          gender: currentUser.gender,
+          teacherProfile: Boolean(currentUser.teacherProfile),
+          status: currentUser.status,
+        },
+      }
+      : defaultValues,
   });
 
   const {
@@ -105,149 +114,178 @@ export function UserNewEditForm({ currentUser }: Props) {
   });
 
   return (
-    <Form methods={methods} onSubmit={onSubmit}>
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ pt: 10, pb: 5, px: 3 }}>
-            {currentUser && (
-              <Label
-                color={
-                  (values.status === 'active' && 'success') ||
-                  (values.status === 'banned' && 'error') ||
-                  'warning'
-                }
-                sx={{ position: 'absolute', top: 24, right: 24 }}
-              >
-                {values.status}
-              </Label>
-            )}
+    <Dialog
+      fullWidth
+      maxWidth={false}
+      open={open}
+      onClose={onClose}
+      slotProps={{
+        paper: {
+          sx: { maxWidth: 1440 },
+        },
+      }}
+    >
+      <DialogTitle>{currentUser ? 'Chỉnh sửa thông tin người dùng' : 'Thêm thông tin người dùng'}</DialogTitle>
+      <Form methods={methods} onSubmit={onSubmit}>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card sx={{ pt: 10, pb: 5, px: 3 }}>
+              {currentUser && (
+                <Label
+                  color={
+                    (values.status === 'ACTIVE' && 'success') ||
+                    (values.status === 'INACTIVE' && 'error') ||
+                    'warning'
+                  }
+                  sx={{ position: 'absolute', top: 24, right: 24 }}
+                >
+                  {values.status === 'ACTIVE' ? (
+                    <>
+                      <Iconify icon="ri:account-circle-fill" color='#4e42d9' width={24} height={24} /> Đang hoạt động
+                    </>
+                  ) : (
+                    <>
+                      <Iconify icon="material-symbols-light:account-circle-off-rounded" color='#000' width={24} height={24} /> Không hoạt động
+                    </>
+                  )}
+                </Label>
+              )}
 
-            <Box sx={{ mb: 5 }}>
-              <Field.UploadAvatar
-                name="avatarUrl"
-                maxSize={3145728}
-                helperText={
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      mt: 3,
-                      mx: 'auto',
-                      display: 'block',
-                      textAlign: 'center',
-                      color: 'text.disabled',
-                    }}
-                  >
-                    Allowed *.jpeg, *.jpg, *.png, *.gif
-                    <br /> max size of {fData(3145728)}
-                  </Typography>
-                }
-              />
-            </Box>
+              <Box sx={{ mb: 5 }}>
+                <Field.UploadAvatar
+                  name="avatarUrl"
+                  maxSize={3145728}
+                  helperText={
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        mt: 3,
+                        mx: 'auto',
+                        display: 'block',
+                        textAlign: 'center',
+                        color: 'text.disabled',
+                      }}
+                    >
+                      Cho phép *.jpeg, *.jpg, *.png, *.gif
+                      <br /> Kích thước tối đa {fData(3145728)}
+                    </Typography>
+                  }
+                />
+              </Box>
 
-            {currentUser && (
-              <FormControlLabel
+              {currentUser && (
+                <FormControlLabel
+                  labelPlacement="start"
+                  control={
+                    <Controller
+                      name="status"
+                      control={control}
+                      render={({ field }) => (
+                        <Switch
+                          {...field}
+                          checked={field.value === 'INACTIVE'}
+                          onChange={(event) => field.onChange(event.target.checked ? 'INACTIVE' : 'ACTIVE')}
+                        />
+                      )}
+                    />
+                  }
+                  label={
+                    <>
+                      <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                        Vô hiệu hóa
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Áp dụng vô hiệu hóa người dùng này
+                      </Typography>
+                    </>
+                  }
+                  sx={{
+                    mx: 0,
+                    mb: 3,
+                    width: 1,
+                    justifyContent: 'space-between',
+                  }}
+                />
+              )}
+
+              {/* <Field.Switch
+                name="isVerified"
                 labelPlacement="start"
-                control={
-                  <Controller
-                    name="status"
-                    control={control}
-                    render={({ field }) => (
-                      <Switch
-                        {...field}
-                        checked={field.value !== 'active'}
-                        onChange={(event) =>
-                          field.onChange(event.target.checked ? 'banned' : 'active')
-                        }
-                      />
-                    )}
-                  />
-                }
                 label={
                   <>
                     <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                      Banned
+                      Xác minh email
                     </Typography>
                     <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      Apply disable account
-                    </Typography>
+                    </Typography> 
                   </>
                 }
+                sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
+              /> */}
+
+              {currentUser && (
+                <Stack sx={{ mt: 3, alignItems: 'center', justifyContent: 'center' }}>
+                  <Button variant="soft" color="error" startIcon={<Iconify icon="fluent-color:person-warning-48" />}>
+                    Xóa người dùng
+                  </Button>
+                </Stack>
+              )}
+            </Card>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 8 }} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly' }}>
+            <Card sx={{ p: 3 }}>
+              <Box
                 sx={{
-                  mx: 0,
-                  mb: 3,
-                  width: 1,
-                  justifyContent: 'space-between',
+                  rowGap: 3,
+                  columnGap: 2,
+                  display: 'grid',
+                  gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' },
                 }}
-              />
-            )}
+              >
+                <Field.Text name="firstName" label="Họ và tên" />
+                <Field.Text name="email" label="Địa chỉ email" />
+                <Field.Phone
+                  name="phone"
+                  label="Số điện thoại"
+                  disableSelect
+                />
 
-            <Field.Switch
-              name="isVerified"
-              labelPlacement="start"
-              label={
-                <>
-                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                    Email verified
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Disabling this will automatically send the user a verification email
-                  </Typography>
-                </>
-              }
-              sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
-            />
+                <Field.DatePicker
+                  name="dob"
+                  label="Ngày sinh"
+                />
 
-            {currentUser && (
-              <Stack sx={{ mt: 3, alignItems: 'center', justifyContent: 'center' }}>
-                <Button variant="soft" color="error">
-                  Delete user
-                </Button>
-              </Stack>
-            )}
-          </Card>
-        </Grid>
+                <Field.RadioGroup name="gender" label='Giới tính' options={[
+                  { label: "Nam", value: "MALE" },
+                  { label: "Nữ", value: "FEMALE" },
+                  { label: "Khác", value: "OTHER" }
+                ]} />
 
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card sx={{ p: 3 }}>
-            <Box
-              sx={{
-                rowGap: 3,
-                columnGap: 2,
-                display: 'grid',
-                gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' },
-              }}
-            >
-              <Field.Text name="name" label="Full name" />
-              <Field.Text name="email" label="Email address" />
-              <Field.Phone
-                name="phoneNumber"
-                label="Phone number"
-                country={!currentUser ? 'DE' : undefined}
-              />
+                {/* <Field.Switch name="teacherProfile" labelPlacement="start"
+                  label={
+                    <>
+                      <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                        Bạn là giáo viên?
+                      </Typography>
+                    </>
+                  }
+                  sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
+                /> */}
+              </Box>
 
-              <Field.CountrySelect
-                fullWidth
-                name="country"
-                label="Country"
-                placeholder="Choose a country"
-              />
-
-              <Field.Text name="state" label="State/region" />
-              <Field.Text name="city" label="City" />
-              <Field.Text name="address" label="Address" />
-              <Field.Text name="zipCode" label="Zip/code" />
-              <Field.Text name="company" label="Company" />
-              <Field.Text name="role" label="Role" />
-            </Box>
-
-            <Stack sx={{ mt: 3, alignItems: 'flex-end' }}>
-              <Button type="submit" variant="contained" loading={isSubmitting}>
-                {!currentUser ? 'Create user' : 'Save changes'}
+            </Card>
+            <Stack direction="row" justifyContent="flex-end" sx={{ p: 4, alignItems: 'flex-end' }}>
+              <Button variant="outlined" color="inherit" onClick={onClose}>
+                Hủy bỏ
+              </Button>
+              <Button type="submit" variant="contained" sx={{ ml: 1 }} loading={isSubmitting}>
+                {!currentUser ? 'Thêm dữ liệu' : 'Lưu thay đổi'}
               </Button>
             </Stack>
-          </Card>
+          </Grid>
         </Grid>
-      </Grid>
-    </Form>
+      </Form>
+    </Dialog>
   );
 }

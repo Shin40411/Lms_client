@@ -72,7 +72,7 @@ export function JwtSignInView() {
     } catch (error) {
       const feedbackMessage = getErrorMessage(error);
       console.error(error, feedbackMessage);
-      setErrorMessage('Server chưa được kết nối!');
+      setErrorMessage(feedbackMessage);
     }
   });
 

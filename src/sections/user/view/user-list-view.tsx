@@ -47,6 +47,7 @@ import { CONFIG } from 'src/global-config';
 import { getUsers } from 'src/api/users';
 import { RoleItem } from 'src/types/role';
 import { getRoles } from 'src/api/roles';
+import { UserNewEditForm } from '../user-new-edit-form';
 
 // ----------------------------------------------------------------------
 
@@ -68,9 +69,12 @@ export function UserListView() {
   const table = useTable();
 
   const confirmDialog = useBoolean();
+  const quickEditForm = useBoolean();
 
   const [tableData, setTableData] = useState<UserItem[]>([]);
   const [rolesData, setRolesData] = useState<RoleItem[]>([]);
+
+  const [tableRowSelected, setTableRowSelected] = useState<UserItem | null>(null);
 
   const filters = useSetState<IUserTableFilters>({ name: '', role: [], status: 'all' });
   const { state: currentFilters, setState: updateFilters } = filters;
@@ -167,6 +171,14 @@ export function UserListView() {
     />
   );
 
+  const renderQuickEditForm = () => (
+    <UserNewEditForm
+      currentUser={tableRowSelected || null}
+      open={quickEditForm.value}
+      onClose={quickEditForm.onFalse}
+    />
+  );
+  1
   return (
     <>
       <DashboardContent>
@@ -204,8 +216,10 @@ export function UserListView() {
             />
 
             <Button
-              component={RouterLink}
-              href={paths.dashboard.user.new}
+              onClick={() => {
+                quickEditForm.onTrue();
+                setTableRowSelected(null)
+              }}
               variant="contained"
               startIcon={<Iconify icon="fluent-color:document-add-16" />}
             >
@@ -327,6 +341,8 @@ export function UserListView() {
                         onSelectRow={() => table.onSelectRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         editHref={paths.dashboard.user.edit(row.id)}
+                        openEditForm={quickEditForm}
+                        rowSelected={setTableRowSelected}
                       />
                     ))}
 
@@ -342,7 +358,7 @@ export function UserListView() {
           </Box>
         </Card>
       </DashboardContent>
-
+      {renderQuickEditForm()}
       {renderConfirmDialog()}
     </>
   );

@@ -28,7 +28,6 @@ export function UserEditView({ user: currentUser }: Props) {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <UserNewEditForm currentUser={currentUser} />
     </DashboardContent>
   );
 }

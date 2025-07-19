@@ -1,6 +1,6 @@
 import type { IUserItem, UserItem } from 'src/types/user';
 
-import { useBoolean, usePopover } from 'minimal-shared/hooks';
+import { useBoolean, UseBooleanReturn, usePopover } from 'minimal-shared/hooks';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -23,6 +23,8 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomPopover } from 'src/components/custom-popover';
 
 import { UserQuickEditForm } from './user-quick-edit-form';
+import { UserNewEditForm } from './user-new-edit-form';
+import { Dispatch, SetStateAction } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -32,20 +34,13 @@ type Props = {
   editHref: string;
   onSelectRow: () => void;
   onDeleteRow: () => void;
+  openEditForm: UseBooleanReturn;
+  rowSelected: Dispatch<SetStateAction<UserItem | null>>;
 };
 
-export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow }: Props) {
+export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow, openEditForm, rowSelected }: Props) {
   const menuActions = usePopover();
   const confirmDialog = useBoolean();
-  const quickEditForm = useBoolean();
-
-  const renderQuickEditForm = () => (
-    <UserQuickEditForm
-      currentUser={row}
-      open={quickEditForm.value}
-      onClose={quickEditForm.onFalse}
-    />
-  );
 
   const renderMenuActions = () => (
     <CustomPopover
@@ -55,12 +50,14 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
       slotProps={{ arrow: { placement: 'right-top' } }}
     >
       <MenuList>
-        <li>
-          <MenuItem component={RouterLink} href={editHref} onClick={() => menuActions.onClose()}>
-            <Iconify icon="solar:pen-bold" />
-            Chỉnh sửa
-          </MenuItem>
-        </li>
+        <MenuItem onClick={() => {
+          menuActions.onClose();
+          openEditForm.onTrue();
+          rowSelected(row)
+        }}>
+          <Iconify icon="fluent-color:edit-24" />
+          Chỉnh sửa
+        </MenuItem>
 
         <MenuItem
           onClick={() => {
@@ -69,7 +66,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
           }}
           sx={{ color: 'error.main' }}
         >
-          <Iconify icon="solar:trash-bin-trash-bold" />
+          <Iconify icon="fluent-color:dismiss-circle-28" />
           Xóa
         </MenuItem>
       </MenuList>
@@ -162,15 +159,6 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
             border: 'none',
           }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Tooltip title="Chỉnh sửa" placement="top" arrow>
-              <IconButton
-                color={quickEditForm.value ? 'inherit' : 'default'}
-                onClick={quickEditForm.onTrue}
-              >
-                <Iconify icon="fluent-color:edit-24" />
-              </IconButton>
-            </Tooltip>
-
             <IconButton
               color={menuActions.open ? 'inherit' : 'default'}
               onClick={menuActions.onOpen}
@@ -181,7 +169,6 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
         </TableCell>
       </TableRow >
 
-      {renderQuickEditForm()}
       {renderMenuActions()}
       {renderConfirmDialog()}
     </>
