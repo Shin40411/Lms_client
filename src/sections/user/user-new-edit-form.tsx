@@ -1,4 +1,4 @@
-import type { UserItem } from 'src/types/user';
+import { DegreeType, validDegrees, type CreateOrUpdateUserDto, type UserItem } from 'src/types/user';
 
 import { z as zod } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,32 +22,56 @@ import { fData } from 'src/utils/format-number';
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
-import { Dialog, DialogTitle } from '@mui/material';
+import { Dialog, DialogTitle, FormControl, FormLabel, IconButton, InputAdornment, MenuItem, Radio, RadioGroup } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
+import { RoleItem } from 'src/types/role';
+import { createUser, updateUser } from 'src/api/users';
+import { useEffect, useState } from 'react';
+import { useBoolean } from 'minimal-shared/hooks';
+import { _mockYear } from 'src/_mock/_mockYear';
 
 // ----------------------------------------------------------------------
 
 export type NewUserSchemaType = zod.infer<typeof NewUserSchema>;
 
 export const NewUserSchema = zod.object({
-  avatarUrl: schemaHelper.file({ message: 'Ảnh đại diện là bắt buộc!' }),
+  avatarUrl: schemaHelper.file().optional(),
 
-  firstName: zod.string().min(1, { message: 'Họ và tên là bắt buộc!' }),
+  firstName: zod.string().min(1, { message: 'Họ là bắt buộc!' }),
+  lastName: zod.string().min(1, { message: 'Tên là bắt buộc!' }),
 
-  email: zod
-    .string()
-    .min(1, { message: 'Email là bắt buộc!' })
-    .email({ message: 'Email không hợp lệ!' }),
+  email: zod.string().email({ message: 'Email không hợp lệ' }).optional().or(zod.literal('')).or(zod.null()),
 
-  phone: zod.string().min(1, { message: 'Số điện thoại là bắt buộc!' }),
+  phone: zod.string().optional(),
 
-  dob: zod.union([zod.date(), zod.null()]).optional(),
+  dob: zod.union([zod.string(), zod.null()]).optional(),
 
   gender: zod.enum(['MALE', 'FEMALE', 'OTHER'], {
     errorMap: () => ({ message: 'Giới tính là bắt buộc!' }),
   }),
 
   status: zod.enum(['ACTIVE', 'INACTIVE']),
+
+  role: zod.string().min(1, { message: 'Vai trò là bắt buộc!' }),
+
+  username: zod.string().min(1, { message: 'Tên đăng nhập là bắt buộc!' }),
+
+  password: zod
+    .preprocess((val) => val === '' ? undefined : val, zod.string().min(8, 'Mật khẩu tối thiểu 8 ký tự!').optional()),
+
+  address: zod.string().nullable().optional(),
+
+  teacherProfile: zod
+    .object({
+      degree: zod.enum(validDegrees),
+    })
+    .optional(),
+
+  studentProfile: zod
+    .object({
+      academicYear: zod.string().min(1, 'Vui lòng nhập năm học'),
+    })
+    .optional(),
 });
 
 // ----------------------------------------------------------------------
@@ -56,19 +80,32 @@ type Props = {
   currentUser: UserItem | null;
   open: boolean;
   onClose: () => void;
+  roleDatas?: RoleItem[];
 };
 
-export function UserNewEditForm({ currentUser, open, onClose }: Props) {
-  const router = useRouter();
+export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props) {
+  const showPassword = useBoolean();
+  const [userType, setUserType] = useState<'' | 'TEACHER' | 'STUDENT'>('');
 
   const defaultValues: NewUserSchemaType = {
     avatarUrl: null,
     firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     dob: null,
     gender: 'OTHER',
     status: 'ACTIVE',
+    role: '',
+    username: '',
+    password: '',
+    address: null,
+    teacherProfile: undefined,
+    studentProfile: undefined,
+  };
+
+  const isValidDegree = (degree: string): degree is typeof validDegrees[number] => {
+    return validDegrees.includes(degree as typeof validDegrees[number]);
   };
 
   const methods = useForm<NewUserSchemaType>({
@@ -77,19 +114,60 @@ export function UserNewEditForm({ currentUser, open, onClose }: Props) {
     defaultValues: currentUser
       ? {
         ...defaultValues,
-        ...{
-          avatarUrl: currentUser.avatar,
-          firstName: currentUser.firstName,
-          email: currentUser.email,
-          phone: currentUser.phone,
-          dob: currentUser.dob ? new Date(currentUser.dob) : null,
-          gender: currentUser.gender,
-          teacherProfile: Boolean(currentUser.teacherProfile),
-          status: currentUser.status,
-        },
+        avatarUrl: currentUser.avatar || null,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        email: currentUser.email,
+        phone: currentUser.phone,
+        dob: currentUser.dob ? new Date(currentUser.dob).toISOString() : null,
+        gender: currentUser.gender,
+        status: currentUser.status,
+        role: currentUser.role.id,
+        username: currentUser.username,
+        password: '',
+        address: currentUser.address ?? null,
+        teacherProfile:
+          currentUser.teacherProfile &&
+            isValidDegree(currentUser.teacherProfile.degree)
+            ? {
+              degree: currentUser.teacherProfile.degree as typeof validDegrees[number],
+            }
+            : undefined,
+        studentProfile: undefined,
       }
       : defaultValues,
   });
+
+  useEffect(() => {
+    if (currentUser?.teacherProfile) setUserType('TEACHER');
+    if (currentUser) {
+      methods.reset({
+        ...defaultValues,
+        avatarUrl: currentUser.avatar || null,
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        email: currentUser.email,
+        phone: currentUser.phone || '',
+        dob: currentUser.dob ? new Date(currentUser.dob).toISOString() : null,
+        gender: currentUser.gender,
+        status: currentUser.status,
+        role: currentUser.role.id,
+        username: currentUser.username,
+        password: '',
+        address: currentUser.address ?? null,
+        teacherProfile:
+          currentUser.teacherProfile &&
+            isValidDegree(currentUser.teacherProfile.degree)
+            ? {
+              degree: currentUser.teacherProfile.degree as DegreeType,
+            }
+            : undefined,
+        studentProfile: undefined,
+      });
+    } else {
+      methods.reset(defaultValues);
+    }
+  }, [currentUser, methods.reset]);
 
   const {
     reset,
@@ -103,11 +181,33 @@ export function UserNewEditForm({ currentUser, open, onClose }: Props) {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      console.log(data);
+      const payload: CreateOrUpdateUserDto = {
+        roleId: data.role,
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        dob: data.dob ? new Date(data.dob).toISOString() : '',
+        code: currentUser?.code || `B${Date.now()}`,
+        avatar: typeof data.avatarUrl === 'string' ? data.avatarUrl : undefined,
+        gender: data.gender,
+        email: data.email || '',
+        phone: data.phone || '',
+        address: data.address || null,
+        teacherProfile: userType === 'TEACHER' ? data.teacherProfile : undefined,
+        studentProfile: userType === 'STUDENT' ? data.studentProfile : undefined,
+        ...(currentUser ? {} : { password: data.password ?? '' }),
+      };
+
+      if (currentUser) {
+        await updateUser(currentUser.id, payload);
+      } else {
+        await createUser(payload);
+      }
+
+      toast.success(currentUser ? 'Cập nhật dữ liệu thành công!' : 'Tạo mới thành công!');
       reset();
-      toast.success(currentUser ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.user.list);
-      console.info('DATA', data);
+      onClose();
     } catch (error) {
       console.error(error);
     }
@@ -125,9 +225,9 @@ export function UserNewEditForm({ currentUser, open, onClose }: Props) {
         },
       }}
     >
-      <DialogTitle>{currentUser ? 'Chỉnh sửa thông tin người dùng' : 'Thêm thông tin người dùng'}</DialogTitle>
+      <DialogTitle>{currentUser ? 'Chỉnh sửa thông tin người dùng' : 'Tạo thông tin người dùng'}</DialogTitle>
       <Form methods={methods} onSubmit={onSubmit}>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ p: '10px' }}>
           <Grid size={{ xs: 12, md: 4 }}>
             <Card sx={{ pt: 10, pb: 5, px: 3 }}>
               {currentUser && (
@@ -233,7 +333,7 @@ export function UserNewEditForm({ currentUser, open, onClose }: Props) {
             </Card>
           </Grid>
 
-          <Grid size={{ xs: 12, md: 8 }} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly' }}>
+          <Grid size={{ xs: 12, md: 8 }} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', gap: 1 }}>
             <Card sx={{ p: 3 }}>
               <Box
                 sx={{
@@ -243,37 +343,101 @@ export function UserNewEditForm({ currentUser, open, onClose }: Props) {
                   gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' },
                 }}
               >
-                <Field.Text name="firstName" label="Họ và tên" />
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+                  <Field.Text name="lastName" label="Họ" sx={{ width: '30%' }} />
+                  <Field.Text name="firstName" label="Tên" sx={{ width: '70%' }} />
+                </Box>
                 <Field.Text name="email" label="Địa chỉ email" />
-                <Field.Phone
+                <Field.Text name="phone" label="Số điện thoại" />
+                {/* <Field.Phone
+                  country='VN'
                   name="phone"
                   label="Số điện thoại"
-                  disableSelect
-                />
-
+                /> */}
+                <Field.Text name="address" label="Địa chỉ" />
                 <Field.DatePicker
                   name="dob"
                   label="Ngày sinh"
                 />
-
+                <Field.Select
+                  size='medium'
+                  label="Vai trò"
+                  name="role"
+                >
+                  {roleDatas?.map((r) => (
+                    <MenuItem
+                      key={r.id}
+                      value={r.id}
+                    >
+                      {r.name}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
                 <Field.RadioGroup name="gender" label='Giới tính' options={[
                   { label: "Nam", value: "MALE" },
                   { label: "Nữ", value: "FEMALE" },
                   { label: "Khác", value: "OTHER" }
                 ]} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Field.Text name="username" label="Tên đăng nhập" />
+                  {!currentUser && (
+                    <Field.Text name="password" label="Mật khẩu"
+                      type={showPassword.value ? 'text' : 'password'}
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton onClick={showPassword.onToggle} edge="end">
+                                <Iconify
+                                  icon={showPassword.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                                />
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                  )}
+                </Box>
 
-                {/* <Field.Switch name="teacherProfile" labelPlacement="start"
-                  label={
-                    <>
-                      <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                        Bạn là giáo viên?
-                      </Typography>
-                    </>
-                  }
-                  sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
-                /> */}
+                <FormControl>
+                  <FormLabel>Loại người dùng</FormLabel>
+                  <RadioGroup
+                    row
+                    value={userType}
+                    onChange={(e) => setUserType(e.target.value as 'TEACHER' | 'STUDENT')}
+                  >
+                    <FormControlLabel value="TEACHER" control={<Radio />} label="Giáo viên" />
+                    <FormControlLabel value="STUDENT" control={<Radio />} label="Học sinh" />
+                  </RadioGroup>
+                </FormControl>
+
+
+                {userType === 'TEACHER' && (
+                  <Field.Select name="teacherProfile.degree" label="Bằng cấp">
+                    <MenuItem value="BACHELOR">Cử nhân</MenuItem>
+                    <MenuItem value="MASTER">Thạc sĩ</MenuItem>
+                    <MenuItem value="DOCTORATE">Tiến sĩ</MenuItem>
+                    <MenuItem value="ORTHER">Khác</MenuItem>
+                  </Field.Select>
+                )}
+
+                {userType === 'STUDENT' && (
+                  <Field.Text
+                    name="studentProfile.academicYear"
+                    label="Niên khóa"
+                    select
+                    SelectProps={{ native: false }}
+                  >
+                    {_mockYear.map((g) => (
+                      <MenuItem key={g} value={g}>
+                        {g}
+                      </MenuItem>
+                    ))}
+                  </Field.Text>
+                )}
+
               </Box>
-
             </Card>
             <Stack direction="row" justifyContent="flex-end" sx={{ p: 4, alignItems: 'flex-end' }}>
               <Button variant="outlined" color="inherit" onClick={onClose}>

@@ -103,6 +103,10 @@ export const schemaHelper = {
    */
   file: (props?: { message: string }) =>
     zod.custom<File | string | null>().transform((data, ctx) => {
+      if (data === undefined || data === null || data === '') {
+        return data;
+      }
+
       const hasFile = data instanceof File || (typeof data === 'string' && !!data.length);
 
       if (!hasFile) {

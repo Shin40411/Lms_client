@@ -4,7 +4,7 @@ export default function getDegreeLabel(degree: string): string {
             return 'Cử nhân';
         case 'MASTER':
             return 'Thạc sĩ';
-        case 'DOCTOR':
+        case 'DOCTORATE':
             return 'Tiến sĩ';
         default:
             return degree;

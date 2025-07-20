@@ -105,8 +105,11 @@ export interface UserResponse {
   results: UserItem[];
 };
 
+export const validDegrees = ['BACHELOR', 'MASTER', 'DOCTORATE', 'ORTHER'] as const;
+export type DegreeType = typeof validDegrees[number];
 export interface UserItem {
   id: string;
+  address: string;
   username: string;
   firstName: string;
   lastName: string;
@@ -120,10 +123,31 @@ export interface UserItem {
   status: 'ACTIVE' | 'INACTIVE';
   teacherProfile?: {
     id: string;
-    degree: 'BACHELOR' | 'MASTER' | 'DOCTOR' | string;
+    degree: string;
   };
   role: {
     id: string;
     name: string;
+  };
+}
+
+export interface CreateOrUpdateUserDto {
+  address?: string | null;
+  roleId: string;
+  password?: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  dob: string;
+  avatar?: string;
+  gender: 'MALE' | 'FEMALE' | 'OTHER';
+  code?: string;
+  email?: string;
+  phone?: string;
+  teacherProfile?: {
+    degree: 'BACHELOR' | 'MASTER' | 'DOCTORATE' | 'ORTHER';
+  };
+  studentProfile?: {
+    academicYear: string;
   };
 }

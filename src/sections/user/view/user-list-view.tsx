@@ -176,6 +176,7 @@ export function UserListView() {
       currentUser={tableRowSelected || null}
       open={quickEditForm.value}
       onClose={quickEditForm.onFalse}
+      roleDatas={rolesData}
     />
   );
   1

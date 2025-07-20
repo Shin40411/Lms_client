@@ -63,7 +63,8 @@ export const endpoints = {
     search: '/api/product/search',
   },
   users: {
-    list: (params?: string) => `/api/v1/users${params}`
+    list: (params?: string) => `/api/v1/users${params}`,
+    byId: (id: string) => `/api/v1/users/${id}`
   },
   roles: {
     list: '/api/v1/roles'
