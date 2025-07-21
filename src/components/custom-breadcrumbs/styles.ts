@@ -12,7 +12,9 @@ export const BreadcrumbsHeading = styled('h6')(({ theme }) => ({
   ...theme.typography.h4,
   margin: 0,
   padding: 0,
+  fontWeight: 800,
   display: 'inline-flex',
+  // textTransform: 'uppercase',
 }));
 
 export const BreadcrumbsContainer = styled('div')(({ theme }) => ({

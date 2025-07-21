@@ -64,6 +64,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
             confirmDialog.onTrue();
             menuActions.onClose();
           }}
+          disabled
           sx={{ color: 'error.main' }}
         >
           <Iconify icon="fluent-color:dismiss-circle-28" />
@@ -90,7 +91,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
   return (
     <>
       <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
-        <TableCell padding="checkbox"
+        {/* <TableCell padding="checkbox"
           sx={{
             border: 'none',
           }}
@@ -105,7 +106,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
               },
             }}
           />
-        </TableCell>
+        </TableCell> */}
 
         <TableCell sx={{
           border: 'none',
@@ -114,14 +115,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
             <Avatar alt={row.username} src={row.avatar} />
 
             <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
-              <Link
-                component={RouterLink}
-                href={editHref}
-                color="inherit"
-                sx={{ cursor: 'pointer' }}
-              >
-                {row.lastName} {row.firstName}
-              </Link>
+              {row.lastName} {row.firstName}
               <Box component="span" sx={{ color: 'text.disabled' }}>
                 {row.username}
               </Box>
@@ -129,13 +123,11 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
           </Box>
         </TableCell>
 
+        <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>{row.code}</TableCell>
+
         <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>
           {row.gender === 'MALE' ? 'Nam' : row.gender === 'FEMALE' ? 'Nữ' : 'Khác'}
         </TableCell>
-
-        <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>{row.phone}</TableCell>
-
-        <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>{row.email}</TableCell>
 
         <TableCell sx={{ border: 'none', whiteSpace: 'nowrap' }}>{row.role.name}</TableCell>
 
@@ -146,7 +138,7 @@ export function UserTableRow({ row, selected, editHref, onSelectRow, onDeleteRow
             variant="soft"
             color={
               (row.status === 'ACTIVE' && 'success') ||
-              (row.status === 'INACTIVE' && 'warning') ||
+              (row.status === 'INACTIVE' && 'error') ||
               'default'
             }
           >

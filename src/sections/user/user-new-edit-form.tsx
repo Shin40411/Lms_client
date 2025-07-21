@@ -40,10 +40,6 @@ export const NewUserSchema = zod.object({
   firstName: zod.string().min(1, { message: 'Họ là bắt buộc!' }),
   lastName: zod.string().min(1, { message: 'Tên là bắt buộc!' }),
 
-  email: zod.string().email({ message: 'Email không hợp lệ' }).optional().or(zod.literal('')).or(zod.null()),
-
-  phone: zod.string().optional(),
-
   dob: zod.union([zod.string(), zod.null()]).optional(),
 
   gender: zod.enum(['MALE', 'FEMALE', 'OTHER'], {
@@ -56,10 +52,9 @@ export const NewUserSchema = zod.object({
 
   username: zod.string().min(1, { message: 'Tên đăng nhập là bắt buộc!' }),
 
-  password: zod
-    .preprocess((val) => val === '' ? undefined : val, zod.string().min(8, 'Mật khẩu tối thiểu 8 ký tự!').optional()),
+  password: zod.string().min(8, 'Mật khẩu tối thiểu 8 ký tự!'),
 
-  address: zod.string().nullable().optional(),
+  code: zod.string().optional(),
 
   teacherProfile: zod
     .object({
@@ -91,15 +86,13 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
     avatarUrl: null,
     firstName: '',
     lastName: '',
-    email: '',
-    phone: '',
     dob: null,
     gender: 'OTHER',
     status: 'ACTIVE',
     role: '',
     username: '',
     password: '',
-    address: null,
+    code: '',
     teacherProfile: undefined,
     studentProfile: undefined,
   };
@@ -117,15 +110,13 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
         avatarUrl: currentUser.avatar || null,
         firstName: currentUser.firstName,
         lastName: currentUser.lastName,
-        email: currentUser.email,
-        phone: currentUser.phone,
         dob: currentUser.dob ? new Date(currentUser.dob).toISOString() : null,
         gender: currentUser.gender,
         status: currentUser.status,
+        code: currentUser.code,
         role: currentUser.role.id,
         username: currentUser.username,
         password: '',
-        address: currentUser.address ?? null,
         teacherProfile:
           currentUser.teacherProfile &&
             isValidDegree(currentUser.teacherProfile.degree)
@@ -139,30 +130,20 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
   });
 
   useEffect(() => {
-    if (currentUser?.teacherProfile) setUserType('TEACHER');
+    if (currentUser) setUserType('');
     if (currentUser) {
       methods.reset({
         ...defaultValues,
         avatarUrl: currentUser.avatar || null,
         firstName: currentUser.firstName,
         lastName: currentUser.lastName,
-        email: currentUser.email,
-        phone: currentUser.phone || '',
         dob: currentUser.dob ? new Date(currentUser.dob).toISOString() : null,
         gender: currentUser.gender,
         status: currentUser.status,
+        code: currentUser.code,
         role: currentUser.role.id,
         username: currentUser.username,
-        password: '',
-        address: currentUser.address ?? null,
-        teacherProfile:
-          currentUser.teacherProfile &&
-            isValidDegree(currentUser.teacherProfile.degree)
-            ? {
-              degree: currentUser.teacherProfile.degree as DegreeType,
-            }
-            : undefined,
-        studentProfile: undefined,
+        password: currentUser.password || '12345678',
       });
     } else {
       methods.reset(defaultValues);
@@ -181,22 +162,19 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      console.log(data);
       const payload: CreateOrUpdateUserDto = {
         roleId: data.role,
         username: data.username,
         firstName: data.firstName,
         lastName: data.lastName,
         dob: data.dob ? new Date(data.dob).toISOString() : '',
-        code: currentUser?.code || `B${Date.now()}`,
+        code: currentUser?.code || '',
+        status: data.status,
         avatar: typeof data.avatarUrl === 'string' ? data.avatarUrl : undefined,
         gender: data.gender,
-        email: data.email || '',
-        phone: data.phone || '',
-        address: data.address || null,
-        teacherProfile: userType === 'TEACHER' ? data.teacherProfile : undefined,
-        studentProfile: userType === 'STUDENT' ? data.studentProfile : undefined,
         ...(currentUser ? {} : { password: data.password ?? '' }),
+        ...(userType === 'TEACHER' ? { teacherProfile: data.teacherProfile } : {}),
+        ...(userType === 'STUDENT' ? { studentProfile: data.studentProfile } : {}),
       };
 
       if (currentUser) {
@@ -295,7 +273,7 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
                         Vô hiệu hóa
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                        Áp dụng vô hiệu hóa người dùng này
+                        Tắt hoạt động người dùng này
                       </Typography>
                     </>
                   }
@@ -343,18 +321,11 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
                   gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' },
                 }}
               >
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2 }}>
                   <Field.Text name="lastName" label="Họ" sx={{ width: '30%' }} />
                   <Field.Text name="firstName" label="Tên" sx={{ width: '70%' }} />
                 </Box>
-                <Field.Text name="email" label="Địa chỉ email" />
-                <Field.Text name="phone" label="Số điện thoại" />
-                {/* <Field.Phone
-                  country='VN'
-                  name="phone"
-                  label="Số điện thoại"
-                /> */}
-                <Field.Text name="address" label="Địa chỉ" />
+                <Field.Text name="code" label="Mã số" />
                 <Field.DatePicker
                   name="dob"
                   label="Ngày sinh"
@@ -373,11 +344,13 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
                     </MenuItem>
                   ))}
                 </Field.Select>
-                <Field.RadioGroup name="gender" label='Giới tính' options={[
-                  { label: "Nam", value: "MALE" },
-                  { label: "Nữ", value: "FEMALE" },
-                  { label: "Khác", value: "OTHER" }
-                ]} />
+                {/* <Field.Phone
+                  country='VN'
+                  name="phone"
+                  label="Số điện thoại"
+                  disableSelect
+                /> */}
+
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <Field.Text name="username" label="Tên đăng nhập" />
                   {!currentUser && (
@@ -399,18 +372,28 @@ export function UserNewEditForm({ currentUser, open, onClose, roleDatas }: Props
                     />
                   )}
                 </Box>
+                {/* <Field.Text name="email" label="Địa chỉ email" /> */}
+                {/* <Field.Text name="address" label="Địa chỉ" /> */}
+                <Field.RadioGroup name="gender" label='Giới tính' options={[
+                  { label: "Nam", value: "MALE" },
+                  { label: "Nữ", value: "FEMALE" },
+                  { label: "Khác", value: "OTHER" }
+                ]} />
 
-                <FormControl>
-                  <FormLabel>Loại người dùng</FormLabel>
-                  <RadioGroup
-                    row
-                    value={userType}
-                    onChange={(e) => setUserType(e.target.value as 'TEACHER' | 'STUDENT')}
-                  >
-                    <FormControlLabel value="TEACHER" control={<Radio />} label="Giáo viên" />
-                    <FormControlLabel value="STUDENT" control={<Radio />} label="Học sinh" />
-                  </RadioGroup>
-                </FormControl>
+
+                {!currentUser && (
+                  <FormControl>
+                    <FormLabel>Loại người dùng (Tùy chọn)</FormLabel>
+                    <RadioGroup
+                      row
+                      value={userType}
+                      onChange={(e) => setUserType(e.target.value as 'TEACHER' | 'STUDENT')}
+                    >
+                      <FormControlLabel value="TEACHER" control={<Radio />} label="Giáo viên" />
+                      <FormControlLabel value="STUDENT" control={<Radio />} label="Học sinh" />
+                    </RadioGroup>
+                  </FormControl>
+                )}
 
 
                 {userType === 'TEACHER' && (

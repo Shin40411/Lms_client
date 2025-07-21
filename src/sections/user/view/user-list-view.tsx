@@ -1,5 +1,5 @@
 import type { TableHeadCellProps } from 'src/components/table';
-import type { IUserItem, IUserTableFilters, UserItem, UserResponse } from 'src/types/user';
+import type { IUserTableFilters, UserItem } from 'src/types/user';
 
 import { useState, useCallback, useEffect } from 'react';
 import { varAlpha } from 'minimal-shared/utils';
@@ -16,7 +16,6 @@ import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 
 import { paths } from 'src/routes/paths';
-import { RouterLink } from 'src/routes/components';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { _roles, _userList, USER_STATUS_OPTIONS } from 'src/_mock';
@@ -26,7 +25,6 @@ import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { ConfirmDialog } from 'src/components/custom-dialog';
-import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import {
   useTable,
   emptyRows,
@@ -42,12 +40,11 @@ import {
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserTableFiltersResult } from '../user-table-filters-result';
-import { Stack } from '@mui/material';
-import { CONFIG } from 'src/global-config';
 import { getUsers } from 'src/api/users';
 import { RoleItem } from 'src/types/role';
 import { getRoles } from 'src/api/roles';
 import { UserNewEditForm } from '../user-new-edit-form';
+import HeaderSection from 'src/components/header-section/HeaderSection';
 
 // ----------------------------------------------------------------------
 
@@ -55,9 +52,8 @@ const STATUS_OPTIONS = [{ value: 'all', label: 'Tất cả' }, ...USER_STATUS_OP
 
 const TABLE_HEAD: TableHeadCellProps[] = [
   { id: 'username', label: 'Họ và tên', width: 200 },
+  { id: 'code', label: 'Mã số', width: 200 },
   { id: 'gender', label: 'Giới tính', width: 180 },
-  { id: 'phone', label: 'Số điện thoại', width: 180 },
-  { id: 'email', label: 'Email', width: 180 },
   { id: 'role', label: 'Vai trò', width: 180 },
   { id: 'status', label: 'Trạng thái', width: 100 },
   { id: '', width: 50 },
@@ -102,11 +98,22 @@ export function UserListView() {
     fetchRoles();
   }, []);
 
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    comparator: getComparator(table.order, table.orderBy),
-    filters: currentFilters,
-  });
+  const [dataFiltered, setDataFiltered] = useState<UserItem[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const filtered = await applyFilter({
+        inputData: tableData,
+        comparator: getComparator(table.order, table.orderBy),
+        filters: currentFilters,
+      });
+      if (active) setDataFiltered(filtered);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [tableData, table.order, table.orderBy, currentFilters]);
 
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
@@ -150,10 +157,10 @@ export function UserListView() {
     <ConfirmDialog
       open={confirmDialog.value}
       onClose={confirmDialog.onFalse}
-      title="Delete"
+      title="Xác nhận xóa"
       content={
         <>
-          Are you sure want to delete <strong> {table.selected.length} </strong> items?
+          Bạn có chắc chắn muốn xoá <strong> {table.selected.length} </strong> mục?
         </>
       }
       action={
@@ -165,7 +172,7 @@ export function UserListView() {
             confirmDialog.onFalse();
           }}
         >
-          Delete
+          Xóa
         </Button>
       }
     />
@@ -183,39 +190,13 @@ export function UserListView() {
   return (
     <>
       <DashboardContent>
-        <Box
-          sx={{
-            position: 'relative',
-            my: { xs: 2, md: 3 },
-            px: 4,
-            py: 2,
-            borderRadius: 2,
-            overflow: 'hidden',
-            bgcolor: (theme) =>
-              theme.palette.mode === 'light'
-                ? '#E3F2FD'
-                : theme.palette.background.paper,
-            backgroundImage: `url("${CONFIG.assetsDir}/assets/background/shape-square.svg")`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right',
-          }}
-        >
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            spacing={2}
-            flexWrap="wrap"
-          >
-            <CustomBreadcrumbs
-              heading="Người dùng"
-              links={[
-                { name: 'Tổng quan', href: paths.dashboard.root },
-                { name: 'Người dùng' },
-              ]}
-            />
-
+        <HeaderSection
+          heading="Người dùng"
+          links={[
+            { name: 'Tổng quan', href: paths.dashboard.root },
+            { name: 'Người dùng' },
+          ]}
+          actions={
             <Button
               onClick={() => {
                 quickEditForm.onTrue();
@@ -226,8 +207,8 @@ export function UserListView() {
             >
               Thêm mới
             </Button>
-          </Stack>
-        </Box>
+          }
+        />
 
         <Card>
           {/* bộ lọc */}
@@ -320,12 +301,12 @@ export function UserListView() {
                   rowCount={dataFiltered.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      dataFiltered.map((row) => row.id)
-                    )
-                  }
+                // onSelectAllRows={(checked) =>
+                //   table.onSelectAllRows(
+                //     checked,
+                //     dataFiltered.map((row) => row.id)
+                //   )
+                // }
                 />
 
                 <TableBody>
@@ -373,7 +354,7 @@ type ApplyFilterProps = {
   comparator: (a: any, b: any) => number;
 };
 
-function applyFilter({ inputData, comparator, filters }: ApplyFilterProps) {
+async function applyFilter({ inputData, comparator, filters }: ApplyFilterProps) {
   const { name, status, role } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
@@ -387,11 +368,15 @@ function applyFilter({ inputData, comparator, filters }: ApplyFilterProps) {
   inputData = stabilizedThis.map((el) => el[0]);
 
   if (name) {
-    inputData = inputData.filter((user) => user.lastName.toLowerCase().includes(name.toLowerCase()));
+    // inputData = inputData.filter((user) => {
+    //   user.lastName.toLowerCase().includes(name.toLowerCase())
+    // });
+    const res = await getUsers(`?search=${name}`);
+    inputData = res.results;
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((user) => user.gender === status);
+    inputData = inputData.filter((user) => user.status === status);
   }
 
   if (role.length) {

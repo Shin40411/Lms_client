@@ -68,5 +68,8 @@ export const endpoints = {
   },
   roles: {
     list: '/api/v1/roles'
+  },
+  subjects: {
+    list: (params?: string) => `/api/v1/subjects${params}`,
   }
 };

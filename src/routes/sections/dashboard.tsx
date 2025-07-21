@@ -82,6 +82,8 @@ const ParamsPage = lazy(() => import('src/pages/dashboard/params'));
 const BlankPage = lazy(() => import('src/pages/dashboard/blank'));
 // Class page
 const ClassesPage = lazy(() => import('src/pages/dashboard/lop-hoc/lophoc'));
+// Subject page
+const SubjectPage = lazy(() => import('src/pages/mon-hoc/monhoc'));
 
 // ----------------------------------------------------------------------
 
@@ -118,6 +120,7 @@ export const dashboardRoutes: RouteObject[] = [
       { path: 'booking', element: <OverviewBookingPage /> },
       { path: 'file', element: <OverviewFilePage /> },
       { path: 'classes', element: <ClassesPage /> },
+      { path: 'subjects', element: <SubjectPage /> },
       { path: 'course', element: <OverviewCoursePage /> },
       {
         path: 'user',

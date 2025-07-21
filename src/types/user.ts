@@ -111,6 +111,7 @@ export interface UserItem {
   id: string;
   address: string;
   username: string;
+  password?: string;
   firstName: string;
   lastName: string;
   fullName: string;
@@ -141,6 +142,7 @@ export interface CreateOrUpdateUserDto {
   dob: string;
   avatar?: string;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
+  status: 'ACTIVE' | 'INACTIVE';
   code?: string;
   email?: string;
   phone?: string;

@@ -16,6 +16,7 @@ import {
 
 import type { MoreLinksProps } from './more-links';
 import type { BreadcrumbsLinkProps } from './breadcrumb-link';
+import { useSettingsContext } from '../settings';
 
 // ----------------------------------------------------------------------
 
@@ -56,7 +57,7 @@ export function CustomBreadcrumbs({
   ...other
 }: CustomBreadcrumbsProps) {
   const lastLink = links[links.length - 1]?.name;
-
+  const settings = useSettingsContext();
   const renderHeading = () => (
     <BreadcrumbsHeading {...slotProps?.heading}>
       {backHref ? <BackLink href={backHref} label={heading} /> : heading}
@@ -66,7 +67,7 @@ export function CustomBreadcrumbs({
   const renderLinks = () =>
     slots?.breadcrumbs ?? (
       <Breadcrumbs sx={{
-        bgcolor: 'common.white',
+        bgcolor: settings.state.colorScheme === 'light' ? 'common.white' : 'common.black',
         boxShadow: '0 8px 14px -2px rgba(0, 0, 0, 0.1),0 4px 6px -2px rgba(0, 0, 0, 0.05)',
         padding: '0.75rem 1.25rem',
         borderRadius: 35

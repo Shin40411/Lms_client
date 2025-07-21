@@ -30,14 +30,14 @@ export function ClassCard({ classgr, onEdit, openEdit, confirmDelete, onDelete, 
         >
             <MenuList>
                 <MenuItem onClick={(e) => { openEdit(e), onEdit(classgr), menuActions.onClose() }}>
-                    <Iconify icon="fluent-color:document-edit-16" />
+                    <Iconify icon="fluent-color:edit-24" />
                     Chỉnh sửa
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
                         confirmDelete.onTrue(),
-                        menuActions.onClose(),
-                        onDelete(classgr.id)
+                            menuActions.onClose(),
+                            onDelete(classgr.id)
                     }}
                     sx={{ color: 'error.main' }}
                 >
@@ -103,7 +103,22 @@ export function ClassCard({ classgr, onEdit, openEdit, confirmDelete, onDelete, 
                         }}
                     />
 
-                    <Chip label={`Sĩ số: ${classgr?._count.students}`} sx={{ position: 'absolute', bottom: 10, right: 10, zIndex: 9, userSelect: 'none' }} color="success" />
+                    <Chip
+                        avatar={
+                            <Iconify icon="fluent-color:people-20"
+                                sx={{ bgcolor: 'transparent' }}
+                            />
+                        }
+                        label={`${classgr?._count.students}`}
+                        sx={{
+                            position: 'absolute',
+                            bottom: 10,
+                            right: 10,
+                            zIndex: 9,
+                            userSelect: 'none'
+                        }}
+                        color="default"
+                    />
 
                     <IconButton
                         color={menuActions.open ? 'inherit' : 'default'}

@@ -66,7 +66,7 @@ export const navData: NavSectionProps['data'] = [
   {
     subheader: 'Chung',
     items: [
-      { title: 'Tổng quan', path: paths.dashboard.root, icon: ICONS.dashboard },
+      { title: 'Tổng quan', path: paths.dashboard.root, icon: <Iconify icon={'fluent-color:gauge-20'} /> },
       // { title: 'Ecommerce', path: paths.dashboard.general.ecommerce, icon: ICONS.ecommerce },
       // { title: 'Analytics', path: paths.dashboard.general.analytics, icon: ICONS.analytics },
       // { title: 'Banking', path: paths.dashboard.general.banking, icon: ICONS.banking },
@@ -84,7 +84,12 @@ export const navData: NavSectionProps['data'] = [
       {
         title: 'Lớp học',
         path: paths.dashboard.classes.root,
-        icon: ICONS.course,
+        icon: <Iconify icon={'fluent-color:people-community-24'} />,
+      },
+      {
+        title: 'Môn học',
+        path: paths.dashboard.subjects.root,
+        icon: <Iconify icon={'fluent-color:book-open-lightbulb-24'} />,
       },
     ],
   },
@@ -101,7 +106,7 @@ export const navData: NavSectionProps['data'] = [
       //   allowedRoles: ['admin', 'manager'],
       //   caption: 'Only admin can see this item.',
       // },
-      { title: 'Chat', path: paths.dashboard.chat, icon: ICONS.chat },
+      { title: 'Chat', path: paths.dashboard.chat, icon: <Iconify icon={'fluent-color:chat-multiple-24'} /> },
       // {
       //   title: 'Level',
       //   path: '#/dashboard/menu_level',
@@ -139,7 +144,7 @@ export const navData: NavSectionProps['data'] = [
       {
         title: 'Người dùng',
         path: paths.dashboard.user.root,
-        icon: ICONS.user,
+        icon: <Iconify icon={'fluent-color:people-list-20'} />,
         // children: [
         //   { title: 'Profile', path: paths.dashboard.user.root },
         //   { title: 'Cards', path: paths.dashboard.user.cards },

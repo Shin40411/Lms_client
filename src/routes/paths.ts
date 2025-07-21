@@ -174,6 +174,9 @@ export const paths = {
     },
     classes: {
       root: `${ROOTS.DASHBOARD}/classes`,
+    },
+    subjects: {
+      root: `${ROOTS.DASHBOARD}/subjects`,
     }
   },
 };

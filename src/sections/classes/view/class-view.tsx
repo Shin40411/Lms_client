@@ -1,11 +1,10 @@
-import { CustomBreadcrumbs } from "src/components/custom-breadcrumbs";
 import { DashboardContent } from "src/layouts/dashboard";
 import { paths } from "src/routes/paths";
 import { ClassList } from "../class-list";
 import { ClassItem, ClassListResponse } from "src/types/classes";
 import { useCallback, useEffect, useState } from "react";
 import { deleteClass, getClasses, searchClasses } from "src/api/classes";
-import { Box, Button, InputAdornment, Popover, Skeleton, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, InputAdornment, Popover, TextField } from "@mui/material";
 import { toast } from 'src/components/snackbar';
 import { Iconify } from "src/components/iconify";
 import { ClassForm } from "../class-form";
@@ -14,7 +13,8 @@ import { useBoolean } from "minimal-shared/hooks";
 import { getUsers } from "src/api/users";
 import { SkeletonScreen } from "src/components/skeleton/skeleton";
 import { EmptyContent } from "src/components/empty-content";
-import { CONFIG } from "src/global-config";
+import HeaderSection from "src/components/header-section/HeaderSection";
+import { useSettingsContext } from "src/components/settings";
 
 export function ClassesView() {
     const [open, setOpen] = useState<null | HTMLElement>(null);
@@ -22,6 +22,7 @@ export function ClassesView() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [response, setResponse] = useState<ClassListResponse | null>(null);
     const confirmDelete = useBoolean();
+    const settings = useSettingsContext();
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
         setOpen(event.currentTarget);
@@ -79,7 +80,7 @@ export function ClassesView() {
 
     const fetchSearchClasses = async (keyWord: string) => {
         try {
-            const data = await searchClasses(keyWord);
+            const data = await searchClasses(keyWord.toLowerCase());
             setResponse(data);
         } catch (err) {
             console.error('Không thể tải danh sách lớp học.');
@@ -152,36 +153,13 @@ export function ClassesView() {
 
     return (
         <DashboardContent>
-            <Box
-                sx={{
-                    my: { xs: 2, md: 3 },
-                    px: 4,
-                    py: 2,
-                    borderRadius: 2,
-                    bgcolor: (theme) => theme.palette.mode === 'light'
-                        ? '#E3F2FD'
-                        : theme.palette.background.paper,
-                    backgroundImage: `url("${CONFIG.assetsDir}/assets/background/shape-square.svg")`,
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right',
-                }}
-            >
-                <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    spacing={2}
-                    flexWrap="wrap"
-                >
-                    <CustomBreadcrumbs
-                        heading="Lớp học"
-                        links={[
-                            { name: 'Tổng quan', href: paths.dashboard.root },
-                            { name: 'Lớp học' },
-                        ]}
-                    />
-
+            <HeaderSection
+                heading="Lớp học"
+                links={[
+                    { name: 'Tổng quan', href: paths.dashboard.root },
+                    { name: 'Lớp học' },
+                ]}
+                actions={
                     <Button
                         variant="contained"
                         startIcon={<Iconify icon="fluent-color:document-add-16" />}
@@ -190,51 +168,28 @@ export function ClassesView() {
                     >
                         Thêm mới
                     </Button>
-                </Stack>
-            </Box>
+                }
+            />
 
-            <Box sx={{
-                bgcolor: (theme) => theme.palette.mode === 'light'
-                    ? '#FFF'
-                    : theme.palette.background.paper,
-                p: 2,
-                boxShadow: 5,
-                borderRadius: 2
-            }}>
+            <Card sx={{ p: 3, mb: 3 }}>
                 <Box
                     sx={{
-                        py: 2,
-                        gap: 2,
-                        display: 'flex',
-                        pr: { xs: 2.5, md: 1 },
-                        flexDirection: { xs: 'column', md: 'row' },
-                        alignItems: { xs: 'flex-end', md: 'center' },
+                        pb: 4
                     }}
                 >
-                    <Box
-                        sx={{
-                            gap: 2,
-                            width: 1,
-                            flexGrow: 1,
-                            display: 'flex',
-                            alignItems: 'center',
+                    <TextField
+                        placeholder="Tìm kiếm lớp học..."
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                                    </InputAdornment>
+                                ),
+                            },
                         }}
-                    >
-                        <TextField
-                            fullWidth
-                            placeholder="Tìm kiếm..."
-                            slotProps={{
-                                input: {
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                                        </InputAdornment>
-                                    ),
-                                },
-                            }}
-                            onChange={handleSearch}
-                        />
-                    </Box>
+                        onChange={handleSearch}
+                    />
                 </Box>
                 {response ? (
                     response.count === 0 ? (
@@ -251,7 +206,7 @@ export function ClassesView() {
                 ) : (
                     <SkeletonScreen />
                 )}
-            </Box>
+            </Card>
 
             {Boolean(open) && (
                 <Box

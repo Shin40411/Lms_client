@@ -48,7 +48,7 @@ export function UserTableFiltersResult({ filters, onResetPage, totalResults, sx 
       <FiltersBlock label="Trạng thái:" isShow={currentFilters.status !== 'all'}>
         <Chip
           {...chipProps}
-          label={currentFilters.status}
+          label={currentFilters.status === 'ACTIVE' ? 'Đang hoạt động' : 'Không hoạt động'}
           onDelete={handleRemoveStatus}
           sx={{ textTransform: 'capitalize' }}
         />

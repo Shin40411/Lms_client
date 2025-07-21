@@ -23,6 +23,9 @@ import { ChatMessageInput } from '../chat-message-input';
 import { ChatHeaderDetail } from '../chat-header-detail';
 import { ChatHeaderCompose } from '../chat-header-compose';
 import { useCollapseNav } from '../hooks/use-collapse-nav';
+import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { Box, Stack } from '@mui/material';
+import HeaderSection from 'src/components/header-section/HeaderSection';
 
 // ----------------------------------------------------------------------
 
@@ -59,8 +62,8 @@ export function ChatView() {
 
   const filteredParticipants: IChatParticipant[] = conversation
     ? conversation.participants.filter(
-        (participant: IChatParticipant) => participant.id !== `${user?.id}`
-      )
+      (participant: IChatParticipant) => participant.id !== `${user?.id}`
+    )
     : [];
 
   return (
@@ -68,9 +71,13 @@ export function ChatView() {
       maxWidth={false}
       sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column' }}
     >
-      <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 } }}>
-        Chat
-      </Typography>
+      <HeaderSection
+        heading="Trò chuyện"
+        links={[
+          { name: 'Tổng quan', href: paths.dashboard.root },
+          { name: 'Trò chuyện' },
+        ]}
+      />
 
       <ChatLayout
         slots={{
