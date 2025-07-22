@@ -17,9 +17,10 @@ type Props = {
   openForm: UseBooleanReturn;
   confirmDelete: UseBooleanReturn;
   setSelectedId: Dispatch<SetStateAction<string>>;
+  openDetails: UseBooleanReturn;
 };
 
-export function SubjectList({ subjects, rowSelected, openForm, confirmDelete, setSelectedId }: Props) {
+export function SubjectList({ subjects, rowSelected, openForm, confirmDelete, setSelectedId, openDetails }: Props) {
   return (
     <>
       <Box
@@ -40,6 +41,7 @@ export function SubjectList({ subjects, rowSelected, openForm, confirmDelete, se
             onDelete={confirmDelete}
             openForm={openForm}
             setSelectedId={setSelectedId}
+            openDetails={openDetails}
           />
         ))}
       </Box>

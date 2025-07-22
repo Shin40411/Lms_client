@@ -23,12 +23,12 @@ export function ClassList({ classes, onEdit, confirmDelete, onDelete, openEdit }
     }, []);
 
     return (
-        <>
+        <Box sx={{ p: 4 }}>
             <Box
                 sx={{
                     gap: 3,
                     display: 'grid',
-                    gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+                    gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' },
                 }}
             >
                 {classItems
@@ -44,20 +44,21 @@ export function ClassList({ classes, onEdit, confirmDelete, onDelete, openEdit }
                         />
                     ))}
             </Box>
-
-            <Pagination
-                page={page}
-                shape="circular"
-                count={Math.ceil(classItems.length / rowsPerPage)}
-                onChange={handleChangePage}
-                sx={{
-                    mt: { xs: 5, md: 8 },
-                    mx: 'auto',
-                    '.MuiPagination-ul': {
-                        justifyContent: 'center',
-                    },
-                }}
-            />
-        </>
+            {classItems.length > 8 && (
+                <Pagination
+                    page={page}
+                    shape="circular"
+                    count={Math.ceil(classItems.length / rowsPerPage)}
+                    onChange={handleChangePage}
+                    sx={{
+                        mt: { xs: 5, md: 8 },
+                        mx: 'auto',
+                        '.MuiPagination-ul': {
+                            justifyContent: 'center',
+                        },
+                    }}
+                />
+            )}
+        </Box>
     );
 }

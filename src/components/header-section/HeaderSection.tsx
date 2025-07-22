@@ -2,7 +2,6 @@ import { Box, Stack } from "@mui/material";
 import { ReactNode } from "react";
 import { CONFIG } from "src/global-config";
 import { CustomBreadcrumbs } from "../custom-breadcrumbs";
-import { useSettingsContext } from "../settings";
 
 type BreadcrumbLink = {
     name: string;
@@ -16,7 +15,6 @@ type HeaderSectionProps = {
 };
 
 export default function HeaderSection({ heading, links, actions }: HeaderSectionProps) {
-    const settings = useSettingsContext();
     return (
         <Box
             sx={{
@@ -26,7 +24,6 @@ export default function HeaderSection({ heading, links, actions }: HeaderSection
                 py: 2,
                 borderRadius: 2,
                 overflow: 'hidden',
-                // bgcolor: settings.state.colorScheme === 'light' ? '#DDD' : undefined,
                 backgroundImage: `url("${CONFIG.assetsDir}/assets/background/header-sec.jpg")`,
                 backgroundSize: 'cover',
                 backgroundRepeat: 'no-repeat',

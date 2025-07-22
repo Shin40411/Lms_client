@@ -36,3 +36,9 @@ export async function deleteClass(id: string) {
     const { data } = await axiosInstance.delete(URL);
     return data;
 }
+
+export async function filterClasses (field: string, value: any): Promise<ClassListResponse> {
+    const URL = endpoints.classes.filter(field, value);
+    const { data } = await axiosInstance.get<ClassListResponse>(URL);
+    return data;
+}

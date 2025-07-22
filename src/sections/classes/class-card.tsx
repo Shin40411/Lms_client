@@ -1,4 +1,4 @@
-import { Avatar, Box, Card, CardProps, Chip, Divider, IconButton, ListItemText, MenuItem, MenuList, Typography } from "@mui/material";
+import { Avatar, Box, Card, CardProps, Chip, Divider, IconButton, ListItemText, MenuItem, MenuList, Tooltip, Typography } from "@mui/material";
 import { useBoolean, UseBooleanReturn, usePopover } from "minimal-shared/hooks";
 import { varAlpha } from "minimal-shared/utils";
 import { _socials } from "src/_mock";
@@ -88,20 +88,22 @@ export function ClassCard({ classgr, onEdit, openEdit, confirmDelete, onDelete, 
                         }}
                     />
 
-                    <Image
-                        onClick={detailsDrawer.onTrue}
-                        src={`${CONFIG.assetsDir}/assets/illustrations/Classes.jpg`}
-                        alt={classgr.homeroomTeacher.username}
-                        ratio="16/9"
-                        slotProps={{
-                            overlay: {
-                                sx: (theme) => ({
-                                    bgcolor: varAlpha(theme.vars.palette.common.blackChannel, 0.2),
-                                    cursor: 'pointer'
-                                }),
-                            },
-                        }}
-                    />
+                    <Tooltip title="Xem chi tiết lớp" onClick={detailsDrawer.onTrue}>
+                        <Image
+                            onClick={detailsDrawer.onTrue}
+                            src={`${CONFIG.assetsDir}/assets/illustrations/Classes.jpg`}
+                            alt={classgr.homeroomTeacher.username}
+                            ratio="16/9"
+                            slotProps={{
+                                overlay: {
+                                    sx: (theme) => ({
+                                        bgcolor: varAlpha(theme.vars.palette.common.blackChannel, 0.2),
+                                        cursor: 'pointer'
+                                    }),
+                                },
+                            }}
+                        />
+                    </Tooltip>
 
                     <Chip
                         avatar={

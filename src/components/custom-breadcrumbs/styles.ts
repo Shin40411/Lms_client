@@ -28,7 +28,7 @@ export const BreadcrumbsContainer = styled('div')(({ theme }) => ({
 export const BreadcrumbsContent = styled('div')(({ theme }) => ({
   display: 'flex',
   flex: '1 1 auto',
-  gap: theme.spacing(2),
+  gap: theme.spacing(1),
   flexDirection: 'column',
 }));
 

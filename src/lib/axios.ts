@@ -44,7 +44,8 @@ export const endpoints = {
   classes: {
     list: '/api/v1/classrooms',
     byId: (id: string) => `/api/v1/classrooms/${id}`,
-    byKey: (key: string) => `/api/v1/classrooms/?search=${key}`
+    byKey: (key: string) => `/api/v1/classrooms/?search=${key}`,
+    filter: (field: string, value: any) => `/api/v1/classrooms?${field}=${value}`,
   },
   mail: {
     list: '/api/mail/list',
@@ -71,5 +72,6 @@ export const endpoints = {
   },
   subjects: {
     list: (params?: string) => `/api/v1/subjects${params}`,
+    byId: (id: string) => `/api/v1/subjects/${id}`
   }
 };

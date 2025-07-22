@@ -16,24 +16,22 @@ import { SubjectList } from '../subject-list';
 import HeaderSection from 'src/components/header-section/HeaderSection';
 import { Card, InputAdornment, TextField } from '@mui/material';
 import { SubjectFilter, SbjItem } from 'src/types/subject';
-import { getSubjects } from 'src/api/subjects';
+import { deleteSubject, getSubjects } from 'src/api/subjects';
 import { SubjectNewEditForm } from '../subject-new-edit-form';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { toast } from 'sonner';
+import { SubjectDetails } from '../subject-details';
 
 // ----------------------------------------------------------------------
 
 export function SubjectListView() {
-    const [sortBy, setSortBy] = useState('latest');
     const [subjectsData, setSubjectsData] = useState<SbjItem[]>([]);
     const [tableRowSelected, setTableRowSelected] = useState<SbjItem | null>(null);
     const [selectedId, setSelectedId] = useState('');
 
     const openForm = useBoolean();
+    const openDetails = useBoolean();
     const confirmDelete = useBoolean();
-    const filters = useSetState<SubjectFilter>({
-        code: [],
-        name: [],
-    });
 
     const fetchSubjects = async (keyWord: string) => {
         try {
@@ -62,9 +60,7 @@ export function SubjectListView() {
                 open={openForm.value}
                 onClose={openForm.onFalse}
                 currentSubject={tableRowSelected}
-                onSubmitSubject={async (data) => {
-                    // Handle submit logic here
-                }}
+                fetchData={fetchSubjects}
             />
         )
     }
@@ -95,8 +91,16 @@ export function SubjectListView() {
         </Box>
     );
 
-    const handleDelete = useCallback((id: string) => {
-        console.info('DELETE', id);
+    const handleDelete = useCallback(async (id: string) => {
+        if (!id) return;
+        try {
+            await deleteSubject(id);
+            fetchSubjects('');
+            setTableRowSelected(null);
+            toast.success('Xóa môn học thành công!');
+        } catch (error) {
+            console.error(error);
+        }
     }, []);
 
     const renderConfirmDialog = () => (
@@ -121,6 +125,13 @@ export function SubjectListView() {
         />
     );
 
+    const renderDetails = () => (
+        <SubjectDetails
+            subjectId={selectedId}
+            open={openDetails.value}
+            onClose={openDetails.onFalse}
+        />
+    )
 
     return (
         <DashboardContent>
@@ -156,10 +167,12 @@ export function SubjectListView() {
                     openForm={openForm}
                     confirmDelete={confirmDelete}
                     setSelectedId={setSelectedId}
+                    openDetails={openDetails}
                 />
             </Card>
             {renderNewEditForm()}
             {renderConfirmDialog()}
+            {renderDetails()}
         </DashboardContent>
     );
 }

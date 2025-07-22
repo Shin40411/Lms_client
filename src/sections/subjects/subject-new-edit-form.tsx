@@ -11,6 +11,8 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { useEffect } from 'react';
+import { createSubject, updateSubject } from 'src/api/subjects';
+import { toast } from 'sonner';
 
 // Schema
 const SubjectSchema = zod.object({
@@ -32,10 +34,10 @@ type Props = {
     open: boolean;
     onClose: () => void;
     currentSubject?: SubjectItem | null;
-    onSubmitSubject: (data: SubjectFormType) => Promise<void> | void;
+    fetchData: (k: string) => void;
 };
 
-export function SubjectNewEditForm({ open, onClose, currentSubject, onSubmitSubject }: Props) {
+export function SubjectNewEditForm({ open, onClose, currentSubject, fetchData }: Props) {
     const defaultValues: SubjectFormType = {
         name: '',
         code: '',
@@ -68,9 +70,25 @@ export function SubjectNewEditForm({ open, onClose, currentSubject, onSubmitSubj
     }, [currentSubject, reset]);
 
     const onSubmit = async (data: SubjectFormType) => {
-        await onSubmitSubject(data);
-        reset(defaultValues);
-        onClose();
+        try {
+            const payload = {
+                name: data.name,
+                code: data.code,
+                description: data.description || '',
+            };
+            if (currentSubject) {
+                await updateSubject(currentSubject.id, payload);
+            } else {
+                await createSubject(payload);
+            }
+
+            toast.success(currentSubject ? 'Cập nhật dữ liệu thành công!' : 'Tạo mới thành công!');
+            reset(defaultValues);
+            fetchData('');
+            onClose();
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     return (
@@ -78,7 +96,7 @@ export function SubjectNewEditForm({ open, onClose, currentSubject, onSubmitSubj
             <DialogTitle>{currentSubject ? 'Chỉnh sửa môn học' : 'Thêm môn học'}</DialogTitle>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Card sx={{ p: 3 }}>
-                    <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <Box mb={2}>
                             <Controller
                                 name="name"

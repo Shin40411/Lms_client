@@ -1,7 +1,11 @@
-import { Box, Divider, Drawer, DrawerProps, Stack, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, Divider, Drawer, DrawerProps, Stack, Typography } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
-import { ClassItem } from "src/types/classes";
+import { ClassItem, ClassResponse } from "src/types/classes";
 import getDegreeLabel from "src/utils/format-degree";
+import ClassTableDetails from "./class-table-details";
+import { GridColDef } from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
+import { getDetails } from "src/api/classes";
 
 type Props = DrawerProps & {
     classItem: ClassItem;
@@ -9,6 +13,93 @@ type Props = DrawerProps & {
 };
 
 export function ClassDetails({ classItem, open, onClose, ...other }: Props) {
+    const [ClassDetail, setClassDetail] = useState<ClassResponse | null>(null);
+
+    const fetchDetails = async () => {
+        if (!classItem?.id) return;
+        const res = await getDetails(classItem.id);
+        setClassDetail(res);
+    };
+
+    useEffect(() => {
+        fetchDetails();
+        setClassDetail(null);
+    }, [classItem?.id]);
+
+    const TeacherColumns: GridColDef[] = [
+        {
+            field: 'index',
+            headerName: 'STT',
+            width: 70,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: (params) => params.api.getAllRowIds().indexOf(params.id)+1
+        },
+        {
+            field: 'fullName',
+            headerName: 'Họ và tên',
+            sortable: false,
+            width: 160,
+            valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
+        },
+        {
+            field: 'gender',
+            headerName: 'Giới tính',
+            type: 'string',
+            width: 90,
+            align: 'center',
+            headerAlign: 'center',
+            valueGetter: (value, row) => `${row.gender === 'MALE' ? 'Nam' : 'Nữ'}`,
+        },
+        {
+            field: 'teacherProfile.degree',
+            headerName: 'Bằng cấp',
+            type: 'string',
+            width: 130,
+            flex: 1,
+            align: 'center',
+            headerAlign: 'center',
+            valueGetter: (value, row) => `${row.teacherProfile?.degree ? getDegreeLabel(row.teacherProfile.degree) : ''}`,
+        }
+    ];
+
+    const StudentColumns: GridColDef[] = [
+        {
+            field: 'index',
+            headerName: 'STT',
+            width: 70,
+            align: 'center',
+            headerAlign: 'center',
+            renderCell: (params) => params.api.getAllRowIds().indexOf(params.id) + 1
+        },
+        {
+            field: 'fullName',
+            headerName: 'Họ và tên',
+            sortable: false,
+            width: 160,
+            valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}`,
+        },
+        {
+            field: 'gender',
+            headerName: 'Giới tính',
+            type: 'string',
+            width: 90,
+            align: 'center',
+            headerAlign: 'center',
+            valueGetter: (value, row) => `${row.gender === 'MALE' ? 'Nam' : 'Nữ'}`,
+        },
+        {
+            field: 'academicYear',
+            headerName: 'Năm học',
+            type: 'string',
+            width: 130,
+            flex: 1,
+            align: 'center',
+            headerAlign: 'center',
+            valueGetter: (value, row) => row.studentProfile?.academicYear ?? '',
+        }
+    ];
+
     const classProperties = () => (
         <Stack spacing={1.5}>
             <Box
@@ -107,7 +198,7 @@ export function ClassDetails({ classItem, open, onClose, ...other }: Props) {
                 anchor="right"
                 slotProps={{
                     backdrop: { invisible: true },
-                    paper: { sx: { width: 520 } },
+                    paper: { sx: { width: 600 } },
                 }}
                 {...other}
             >
@@ -128,6 +219,60 @@ export function ClassDetails({ classItem, open, onClose, ...other }: Props) {
                         <Divider sx={{ borderStyle: 'dashed' }} />
                         {teacherProperties()}
                     </Stack>
+                    <Accordion>
+                        <AccordionSummary
+                            expandIcon={<span>&#9660;</span>}
+                            aria-controls="panel-teachers-content"
+                            id="panel-teachers-header"
+                            sx={{
+                                px: 2.5,
+                                minHeight: 48,
+                                '& .MuiAccordionSummary-content': { my: 0.5 }
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    typography: 'subtitle2',
+                                    justifyContent: 'space-between',
+                                    width: '100%',
+                                }}
+                            >
+                                Danh sách giáo viên
+                            </Box>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ px: 2.5 }}>
+                            <ClassTableDetails columns={TeacherColumns} rows={ClassDetail?.teachers.map(t => t.user) || []} />
+                        </AccordionDetails>
+                    </Accordion>
+                    <Accordion>
+                        <AccordionSummary
+                            expandIcon={<span>&#9660;</span>}
+                            aria-controls="panel-students-content"
+                            id="panel-students-header"
+                            sx={{
+                                px: 2.5,
+                                minHeight: 48,
+                                '& .MuiAccordionSummary-content': { my: 0.5 }
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    typography: 'subtitle2',
+                                    justifyContent: 'space-between',
+                                    width: '100%',
+                                }}
+                            >
+                                Danh sách học sinh
+                            </Box>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ px: 2.5 }}>
+                            <ClassTableDetails columns={StudentColumns} rows={ClassDetail?.students || []} />
+                        </AccordionDetails>
+                    </Accordion>
                 </Scrollbar>
             </Drawer>
         </>

@@ -140,14 +140,8 @@ export function UserTableToolbar({ filters, options, onResetPage }: Props) {
               },
             }}
           />
-
-          {/* <IconButton onClick={menuActions.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton> */}
         </Box>
       </Box>
-
-      {/* {renderMenuActions()} */}
     </>
   );
 }

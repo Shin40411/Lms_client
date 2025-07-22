@@ -83,3 +83,7 @@ export interface ClassResponse {
     teachers: number;
   };
 }
+
+export type ClassFilters = {
+  grade: string[];
+};

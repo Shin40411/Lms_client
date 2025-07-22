@@ -16,3 +16,9 @@ export interface SubjectFilter {
     name: string[];
     code: string[];
 }
+
+export interface CreateOrUpdateSubjectDto {
+    name: string;
+    code: string;
+    description?: string;
+}

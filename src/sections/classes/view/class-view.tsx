@@ -1,20 +1,26 @@
 import { DashboardContent } from "src/layouts/dashboard";
 import { paths } from "src/routes/paths";
 import { ClassList } from "../class-list";
-import { ClassItem, ClassListResponse } from "src/types/classes";
+import { ClassFilters, ClassItem, ClassListResponse } from "src/types/classes";
 import { useCallback, useEffect, useState } from "react";
-import { deleteClass, getClasses, searchClasses } from "src/api/classes";
-import { Box, Button, Card, InputAdornment, Popover, TextField } from "@mui/material";
+import { deleteClass, filterClasses, getClasses, searchClasses } from "src/api/classes";
+import { Box, Button, Card, Checkbox, FormControl, InputAdornment, InputLabel, MenuItem, OutlinedInput, Popover, Select, SelectChangeEvent, Tab, Tabs, TextField } from "@mui/material";
 import { toast } from 'src/components/snackbar';
 import { Iconify } from "src/components/iconify";
 import { ClassForm } from "../class-form";
 import { ConfirmDialog } from "src/components/custom-dialog";
-import { useBoolean } from "minimal-shared/hooks";
+import { useBoolean, useSetState } from "minimal-shared/hooks";
 import { getUsers } from "src/api/users";
 import { SkeletonScreen } from "src/components/skeleton/skeleton";
 import { EmptyContent } from "src/components/empty-content";
 import HeaderSection from "src/components/header-section/HeaderSection";
 import { useSettingsContext } from "src/components/settings";
+import { varAlpha } from "minimal-shared/utils";
+import { _mockGrade } from "src/_mock/_mockGrade";
+import { Label } from "src/components/label";
+import { Field } from "src/components/hook-form";
+import { ClassToolbar } from "../class-toolbar";
+import { ClassFiltersResult } from "../class-filter-result";
 
 export function ClassesView() {
     const [open, setOpen] = useState<null | HTMLElement>(null);
@@ -22,7 +28,8 @@ export function ClassesView() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [response, setResponse] = useState<ClassListResponse | null>(null);
     const confirmDelete = useBoolean();
-    const settings = useSettingsContext();
+    const filters = useSetState<ClassFilters>({ grade: [] });
+    const { state: currentFilters } = filters;
 
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
         setOpen(event.currentTarget);
@@ -39,7 +46,6 @@ export function ClassesView() {
     const [students, setStudents] = useState([
         { id: '', name: '' }
     ]);
-
 
     const fetchClasses = async () => {
         try {
@@ -86,6 +92,9 @@ export function ClassesView() {
             console.error('Không thể tải danh sách lớp học.');
         }
     };
+
+    const canReset =
+        currentFilters.grade.length > 0;
 
     useEffect(() => {
         fetchClasses();
@@ -151,6 +160,22 @@ export function ClassesView() {
             fetchClasses();
     }, [fetchSearchClasses, fetchClasses]);
 
+    const handleFilter = useCallback(
+        async (event: string[]) => {
+            try {
+                if (event.length === 0) {
+                    fetchClasses();
+                    return;
+                }
+                const newValue = `[${event.toLocaleString()}]`;
+                const res = await filterClasses('grade', newValue);
+                setResponse(res);
+            } catch (error) {
+                console.error(error);
+            }
+        }, []
+    );
+
     return (
         <DashboardContent>
             <HeaderSection
@@ -171,13 +196,23 @@ export function ClassesView() {
                 }
             />
 
-            <Card sx={{ p: 3, mb: 3 }}>
+            <Card sx={{ mb: 4, pb: 4 }}>
                 <Box
                     sx={{
-                        pb: 4
+                        py: 4,
+                        px: 4,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        gap: 2
                     }}
                 >
+                    <ClassToolbar
+                        filters={filters}
+                        onResetPage={handleFilter}
+                        options={{ grade: _mockGrade.map(r => r) }}
+                    />
                     <TextField
+                        fullWidth
                         placeholder="Tìm kiếm lớp học..."
                         slotProps={{
                             input: {
@@ -191,6 +226,15 @@ export function ClassesView() {
                         onChange={handleSearch}
                     />
                 </Box>
+                {canReset && (
+                    <Box sx={{ px: 4 }}>
+                        <ClassFiltersResult
+                            filters={filters}
+                            onResetPage={handleFilter}
+                            totalResults={response ? response.count : 0}
+                        />
+                    </Box>
+                )}
                 {response ? (
                     response.count === 0 ? (
                         <EmptyContent title="Chưa có lớp học nào" sx={{ p: 5 }} description="Hãy bắt đầu tạo lớp học đầu tiên của bạn để quản lý học sinh và giáo viên." />
@@ -204,7 +248,7 @@ export function ClassesView() {
                         />
                     )
                 ) : (
-                    <SkeletonScreen />
+                <SkeletonScreen />
                 )}
             </Card>
 
