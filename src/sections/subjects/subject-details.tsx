@@ -33,24 +33,30 @@ export function SubjectDetails({ subjectId, open, onClose, ...other }: Props) {
                 {subjectItem && (
                     <>
                         <Box sx={{ display: 'flex', flexDirection: 'row', typography: 'caption', textTransform: 'capitalize' }}>
-                            <Box component="span" sx={{ width: 80, color: 'text.secondary', mr: 2 }}>
+                            <Box component="span" sx={{ width: '25%', color: 'text.secondary', mr: 2 }}>
                                 Tên môn học
                             </Box>
-                            {subjectItem.name}
+                            <Box sx={{ width: '75%' }}>
+                                {subjectItem.name}
+                            </Box>
                         </Box>
 
                         <Box sx={{ display: 'flex', flexDirection: 'row', typography: 'caption', textTransform: 'capitalize' }}>
-                            <Box component="span" sx={{ width: 80, color: 'text.secondary', mr: 2 }}>
+                            <Box component="span" sx={{ width: '25%', color: 'text.secondary', mr: 2 }}>
                                 Mã môn học
                             </Box>
-                            {subjectItem.code}
+                            <Box sx={{ width: '75%' }}>
+                                {subjectItem.code}
+                            </Box>
                         </Box>
 
                         <Box sx={{ display: 'flex', flexDirection: 'row', gap: 4, typography: 'caption', textTransform: 'capitalize' }}>
-                            <Box component="span" sx={{ width: 80, color: 'text.secondary', mr: 2 }}>
+                            <Box component="span" sx={{ width: '25%', color: 'text.secondary', mr: 2 }}>
                                 Mô tả
                             </Box>
-                            {subjectItem.description}
+                            <Box sx={{ width: '75%' }}>
+                                {subjectItem.description}
+                            </Box>
                         </Box>
                     </>
                 )}

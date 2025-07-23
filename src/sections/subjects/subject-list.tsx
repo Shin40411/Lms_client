@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback } from 'react';
+import { Dispatch, SetStateAction, useCallback, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Pagination, { paginationClasses } from '@mui/material/Pagination';
@@ -20,7 +20,19 @@ type Props = {
   openDetails: UseBooleanReturn;
 };
 
+const ITEMS_PER_PAGE = 8;
+
 export function SubjectList({ subjects, rowSelected, openForm, confirmDelete, setSelectedId, openDetails }: Props) {
+  const [page, setPage] = useState(1);
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
+
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedSubjects = subjects.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const pageCount = Math.ceil(subjects.length / ITEMS_PER_PAGE);
+
   return (
     <>
       <Box
@@ -30,7 +42,7 @@ export function SubjectList({ subjects, rowSelected, openForm, confirmDelete, se
           gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' },
         }}
       >
-        {subjects.map((s) => (
+        {paginatedSubjects.map((s) => (
           <SubjectItem
             key={s.id}
             sx={{
@@ -46,9 +58,11 @@ export function SubjectList({ subjects, rowSelected, openForm, confirmDelete, se
         ))}
       </Box>
 
-      {subjects.length > 8 && (
+      {pageCount > 0 && (
         <Pagination
-          count={8}
+          count={pageCount}
+          page={page}
+          onChange={handlePageChange}
           sx={{
             mt: { xs: 8, md: 8 },
             [`& .${paginationClasses.ul}`]: { justifyContent: 'center' },
